@@ -22,8 +22,22 @@
 ========================================================================================
 */
 
-workflow CCEVAL {
+profile_ch = Channel.fromList(params.input).map{it -> [it.name, file(params.datasetsdir + "/" + it.file), it.labels]}
 
+process PROFILE {
+    conda "envs/scanpy.yml"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    script:
+    """
+    profile_dataset.py --name "$name" --labels "$labels" $file
+    """
+}
+
+workflow CCEVAL {
+    PROFILE(profile_ch)
 }
 
 /*
