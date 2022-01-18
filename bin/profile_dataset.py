@@ -4,7 +4,7 @@
 Profile dataset
 
 Usage:
-    profile_dataset.py [options] <file>
+    profile_dataset.py --name=<str> --labels=<str> [options] <file>
 
 Options:
     -h --help        Show this screen.

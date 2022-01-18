@@ -22,7 +22,15 @@
 ========================================================================================
 */
 
-profile_ch = Channel.fromList(params.input).map{it -> [it.name, file(params.datasetsdir + "/" + it.file), it.labels]}
+datasets_ch = Channel
+    .fromList(params.input).
+    map { input ->
+        tuple(
+            input.name,
+            file(params.datasetsdir + "/" + input.file),
+            input.labels
+        )
+    }
 
 process PROFILE {
     conda "envs/scanpy.yml"
@@ -36,8 +44,24 @@ process PROFILE {
     """
 }
 
+process METHOD_SCANPY {
+    conda "envs/scanpy.yml"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        path("scanpy.h5ad")
+
+    script:
+    """
+    method_scanpy.py --out-file scanpy.h5ad $file
+    """
+}
+
 workflow CCEVAL {
-    PROFILE(profile_ch)
+    PROFILE(datasets_ch)
+    METHOD_SCANPY(datasets_ch)
 }
 
 /*
