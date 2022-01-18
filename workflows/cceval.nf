@@ -44,6 +44,36 @@ process PROFILE {
     """
 }
 
+process H5AD2RDS {
+    conda "envs/zellkonverter.yml"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        path("dataset.Rds")
+
+    script:
+    """
+    convert_h5ad_Rds.R --out-file dataset.Rds $file
+    """
+}
+
+process RDS2H5AD {
+    conda "envs/zellkonverter.yml"
+
+    input:
+        path(file)
+
+    output:
+        path("dataset.h5ad")
+
+    script:
+    """
+    convert_Rds_h5ad.R --out-file dataset.h5ad $file
+    """
+}
+
 process METHOD_SCANPY {
     conda "envs/scanpy.yml"
 
@@ -59,9 +89,28 @@ process METHOD_SCANPY {
     """
 }
 
+process METHOD_SEURAT {
+    conda "envs/seurat.yml"
+
+    input:
+        path(file)
+
+    output:
+        path("seurat.Rds")
+
+    script:
+    """
+    method_seurat.R --out-file seurat.Rds $file
+    """
+}
+
 workflow CCEVAL {
     PROFILE(datasets_ch)
+    H5AD2RDS(datasets_ch)
     METHOD_SCANPY(datasets_ch)
+    METHOD_SEURAT(H5AD2RDS.out)
+    rds_ch = METHOD_SEURAT.out
+    RDS2H5AD(rds_ch)
 }
 
 /*
