@@ -47,35 +47,41 @@ process PROFILE {
 process H5AD2RDS {
     conda "envs/zellkonverter.yml"
 
+    publishDir "$params.outdir/rds_datasets"
+
     input:
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("dataset.Rds"), val(labels)
+        tuple val(name), path("${file.baseName}.Rds"), val(labels)
 
     script:
     """
-    convert_h5ad_Rds.R --out-file dataset.Rds $file
+    convert_h5ad_Rds.R --out-file "${file.baseName}.Rds" $file
     """
 }
 
 process RDS2H5AD {
     conda "envs/zellkonverter.yml"
 
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
     input:
         tuple val(name), path(file), val(labels), val(method)
 
     output:
-        tuple val(name), path("dataset.h5ad"), val(labels), val(method)
+        tuple val(name), path("${method}.h5ad"), val(labels), val(method)
 
     script:
     """
-    convert_Rds_h5ad.R --out-file dataset.h5ad $file
+    convert_Rds_h5ad.R --out-file "${method}.h5ad" $file
     """
 }
 
 process METHOD_SCANPY {
     conda "envs/scanpy.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
 
     input:
         tuple val(name), path(file), val(labels)
@@ -92,11 +98,13 @@ process METHOD_SCANPY {
 process METHOD_SEURAT {
     conda "envs/seurat.yml"
 
+    publishDir "$params.outdir/method_output/${name}"
+
     input:
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("seurat.Rds"), val(labels), val("Seurat")
+        tuple val(name), path("Seurat.Rds"), val(labels), val("Seurat")
 
     script:
     """
@@ -145,6 +153,8 @@ process METRIC_FMI {
 
 process COMBINE_METRICS {
     conda "envs/sklearn.yml"
+
+    publishDir "$params.outdir", mode: "copy"
 
     input:
         path(files)
