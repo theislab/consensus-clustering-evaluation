@@ -124,6 +124,26 @@ process METRIC_ARI {
     """
 }
 
+process METRIC_FMI {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        tuple val(name), path("fmi.tsv"), val(labels), val(method)
+
+    script:
+    """
+    metric_fmi.py \\
+        --out-file fmi.tsv \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
+    """
+}
+
 workflow CCEVAL {
     PROFILE(datasets_ch)
     H5AD2RDS(datasets_ch)
@@ -133,6 +153,7 @@ workflow CCEVAL {
     RDS2H5AD(rds_ch)
     output_ch = METHOD_SCANPY.out.concat(RDS2H5AD.out)
     METRIC_ARI(output_ch)
+    METRIC_FMI(output_ch)
 }
 
 /*
