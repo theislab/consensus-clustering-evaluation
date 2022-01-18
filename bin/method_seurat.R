@@ -42,10 +42,10 @@ if (sys.nframe() == 0) {
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
-    message("Converting to Seurat '", file, "'...")
+    message("Converting to Seurat...")
     seurat <- as.Seurat(sce, data = NULL)
     seurat <- run_seurat(seurat)
-    message("Seurat to SingleCellExperiment '", file, "'...")
+    message("Converting to SingleCellExperiment...")
     sce <- as.SingleCellExperiment(seurat)
     colData(sce)$Cluster <- colData(sce)$ident
     message("Writing data to '", out_file, "'...")

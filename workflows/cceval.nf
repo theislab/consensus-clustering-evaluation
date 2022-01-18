@@ -51,7 +51,7 @@ process H5AD2RDS {
         tuple val(name), path(file), val(labels)
 
     output:
-        path("dataset.Rds")
+        tuple val(name), path("dataset.Rds"), val(labels)
 
     script:
     """
@@ -63,10 +63,10 @@ process RDS2H5AD {
     conda "envs/zellkonverter.yml"
 
     input:
-        path(file)
+        tuple val(name), path(file), val(labels), val(method)
 
     output:
-        path("dataset.h5ad")
+        tuple val(name), path("dataset.h5ad"), val(labels), val(method)
 
     script:
     """
@@ -81,7 +81,7 @@ process METHOD_SCANPY {
         tuple val(name), path(file), val(labels)
 
     output:
-        path("scanpy.h5ad")
+        tuple val(name), path("scanpy.h5ad"), val(labels), val("scanpy")
 
     script:
     """
@@ -93,14 +93,34 @@ process METHOD_SEURAT {
     conda "envs/seurat.yml"
 
     input:
-        path(file)
+        tuple val(name), path(file), val(labels)
 
     output:
-        path("seurat.Rds")
+        tuple val(name), path("seurat.Rds"), val(labels), val("Seurat")
 
     script:
     """
     method_seurat.R --out-file seurat.Rds $file
+    """
+}
+
+process METRIC_ARI {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        tuple val(name), path("ari.tsv"), val(labels), val(method)
+
+    script:
+    """
+    metric_ari.py \\
+        --out-file ari.tsv \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
     """
 }
 
@@ -111,6 +131,8 @@ workflow CCEVAL {
     METHOD_SEURAT(H5AD2RDS.out)
     rds_ch = METHOD_SEURAT.out
     RDS2H5AD(rds_ch)
+    output_ch = METHOD_SCANPY.out.concat(RDS2H5AD.out)
+    METRIC_ARI(output_ch)
 }
 
 /*
