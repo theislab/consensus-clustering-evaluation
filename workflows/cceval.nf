@@ -111,12 +111,12 @@ process METRIC_ARI {
         tuple val(name), path(file), val(labels), val(method)
 
     output:
-        tuple val(name), path("ari.tsv"), val(labels), val(method)
+        path("ari_${name}_${method}.tsv")
 
     script:
     """
     metric_ari.py \\
-        --out-file ari.tsv \\
+        --out-file "ari_${name}_${method}.tsv" \\
         --dataset "$name" \\
         --labels $labels \\
         --method $method \\
@@ -131,16 +131,30 @@ process METRIC_FMI {
         tuple val(name), path(file), val(labels), val(method)
 
     output:
-        tuple val(name), path("fmi.tsv"), val(labels), val(method)
-
+        path("fmi_${name}_${method}.tsv")
     script:
     """
     metric_fmi.py \\
-        --out-file fmi.tsv \\
+        --out-file "fmi_${name}_${method}.tsv" \\
         --dataset "$name" \\
         --labels $labels \\
         --method $method \\
         $file
+    """
+}
+
+process COMBINE_METRICS {
+    conda "envs/sklearn.yml"
+
+    input:
+        path(files)
+
+    output:
+        path("metrics.tsv")
+
+    script:
+    """
+    combine_metrics.py --out-file metrics.tsv $files
     """
 }
 
@@ -154,6 +168,10 @@ workflow CCEVAL {
     output_ch = METHOD_SCANPY.out.concat(RDS2H5AD.out)
     METRIC_ARI(output_ch)
     METRIC_FMI(output_ch)
+    metrics_ch = METRIC_ARI.out
+        .concat(METRIC_FMI.out)
+        .toList()
+    COMBINE_METRICS(metrics_ch)
 }
 
 /*
