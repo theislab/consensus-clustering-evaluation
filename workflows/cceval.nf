@@ -104,7 +104,7 @@ process METHOD_SEURAT {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("Seurat.Rds"), val(labels), val("Seurat")
+        tuple val(name), path("seurat.Rds"), val(labels), val("Seurat")
 
     script:
     """

@@ -21,8 +21,11 @@ if (sys.nframe() == 0) {
     file      <- args[["<file>"]]
     out_file  <- args[["--out-file"]]
 
-    message("Writing file from '", file, "'...")
+    anndata <- reticulate::import("anndata")
+    message("Reading SingleCellExperiment from '", file, "'...")
     sce <- readRDS(file)
-    writeH5AD(sce, out_file, verbose = TRUE)
+    adata <- SCE2AnnData(sce, verbose = TRUE)
+    message("Writing AnnData to '", out_file, "'...")
+    adata$write_h5ad(out_file)
     message("Done!")
 }

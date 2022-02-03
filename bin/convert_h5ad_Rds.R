@@ -18,11 +18,14 @@ suppressPackageStartupMessages({
 if (sys.nframe() == 0) {
     args <- docopt::docopt(doc)
 
-    file      <- args[["<file>"]]
-    out_file  <- args[["--out-file"]]
+    file     <- args[["<file>"]]
+    out_file <- args[["--out-file"]]
 
-    sce <- readH5AD(file, verbose = TRUE)
-    message("Writing data to '", out_file, "'...")
+    anndata <- reticulate::import("anndata")
+    message("Reading AnnData from '", file, "'...")
+    adata <- anndata$read_h5ad(file)
+    sce <- AnnData2SCE(adata, verbose = TRUE)
+    message("Writing SingleCellExperiment to '", out_file, "'...")
     saveRDS(sce, out_file)
     message("Done!")
 }
