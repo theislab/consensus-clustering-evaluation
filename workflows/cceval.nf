@@ -98,7 +98,7 @@ process METHOD_SCANPY {
 process METHOD_SEURAT {
     conda "envs/seurat.yml"
 
-    publishDir "$params.outdir/method_output/${name}"
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
 
     input:
         tuple val(name), path(file), val(labels)
@@ -109,6 +109,27 @@ process METHOD_SEURAT {
     script:
     """
     method_seurat.R --out-file seurat.Rds $file
+    """
+}
+
+process MATCH_CLUSTERS {
+    conda "envs/sklearn.yml"
+
+    publishDir "$params.outdir/method_output/${name}"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        tuple val(name), path("${method}_matched.h5ad"), val(labels), val(method)
+
+    script:
+    """
+    match_clusters.py \\
+        --clusters "Cluster" \\
+        --labels "$labels" \\
+        --out-file "${method}_matched.h5ad" \\
+        $file
     """
 }
 
@@ -176,8 +197,9 @@ workflow CCEVAL {
     rds_ch = METHOD_SEURAT.out
     RDS2H5AD(rds_ch)
     output_ch = METHOD_SCANPY.out.concat(RDS2H5AD.out)
-    METRIC_ARI(output_ch)
-    METRIC_FMI(output_ch)
+    MATCH_CLUSTERS(output_ch)
+    METRIC_ARI(MATCH_CLUSTERS.out)
+    METRIC_FMI(MATCH_CLUSTERS.out)
     metrics_ch = METRIC_ARI.out
         .concat(METRIC_FMI.out)
         .toList()
