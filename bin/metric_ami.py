@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-Run the F1 metric
+Run the Adjusted Mutual Information (AMI) metric
 
 Usage:
-    metric_F1.py --out-file=<path> --dataset=<str> --labels=<str> --method=<str> [options] <file>
+    metric_ari.py --out-file=<path> --dataset=<str> --labels=<str> --method=<str> [options] <file>
 
 Options:
     -h --help            Show this screen.
@@ -16,19 +16,18 @@ Options:
 
 import anndata as ad
 import pandas as pd
-from sklearn.metrics import f1_score
+from sklearn.metrics import adjusted_mutual_info_score
 
-def run_F1(adata, dataset, labels, method):
+def run_ami(adata, dataset, labels, method):
 
-    print("Calculating F1...")
-    score = f1_score(adata.obs[labels], adata.obs["ClusterMatched"],
-                     average="micro")
+    print("Calculating AMI...")
+    score = adjusted_mutual_info_score(adata.obs[labels], adata.obs["Cluster"])
 
     results = pd.DataFrame(
         {
             "Dataset": [dataset],
             "Method": [method],
-            "Metric": ["F1"],
+            "Metric": ["AMI"],
             "Score": [score]
         }
     )
@@ -50,6 +49,6 @@ if __name__=="__main__":
     adata = ad.read_h5ad(file)
     print("Read data:")
     print(adata)
-    results = run_F1(adata, dataset, labels, method)
+    results = run_ami(adata, dataset, labels, method)
     print(f"Writing data to '{out_file}'...")
     results.to_csv(out_file, sep="\t", index=False)

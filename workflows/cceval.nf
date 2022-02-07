@@ -153,6 +153,26 @@ process METRIC_ARI {
     """
 }
 
+process METRIC_AMI {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        path("ami_${name}_${method}.tsv")
+
+    script:
+    """
+    metric_ami.py \\
+        --out-file "ami_${name}_${method}.tsv" \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
+    """
+}
+
 process METRIC_FMI {
     conda "envs/sklearn.yml"
 
@@ -218,9 +238,11 @@ workflow CCEVAL {
     output_ch = METHOD_SCANPY.out.concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
     METRIC_ARI(MATCH_CLUSTERS.out)
+    METRIC_AMI(MATCH_CLUSTERS.out)
     METRIC_FMI(MATCH_CLUSTERS.out)
     METRIC_F1(MATCH_CLUSTERS.out)
     metrics_ch = METRIC_ARI.out
+        .concat(METRIC_AMI.out)
         .concat(METRIC_FMI.out)
         .concat(METRIC_F1.out)
         .toList()
