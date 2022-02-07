@@ -8,3 +8,6 @@ testing*
 *.pyc
 
 *.h5ad
+.Rproj.user
+.Rhistory
+*.Rproj

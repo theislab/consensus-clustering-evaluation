@@ -319,6 +319,23 @@ process COMBINE_METRICS {
     """
 }
 
+process PLOT_METRICS {
+    conda "envs/tidyverse.yml"
+
+    publishDir "$params.outdir", mode: "copy"
+
+    input:
+        path(file)
+
+    output:
+        path("metrics-plots.pdf")
+
+    script:
+    """
+    plot_metrics.R --out-file metrics-plots.pdf $file
+    """
+}
+
 workflow CCEVAL {
     PROFILE(datasets_ch)
     H5AD2RDS(datasets_ch)
@@ -348,6 +365,7 @@ workflow CCEVAL {
         .concat(METRIC_MCC.out)
         .toList()
     COMBINE_METRICS(metrics_ch)
+    PLOT_METRICS(COMBINE_METRICS.out)
 }
 
 /*
