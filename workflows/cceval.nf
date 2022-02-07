@@ -172,6 +172,25 @@ process METRIC_FMI {
     """
 }
 
+process METRIC_F1 {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        path("F1_${name}_${method}.tsv")
+    script:
+    """
+    metric_F1.py \\
+        --out-file "F1_${name}_${method}.tsv" \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
+    """
+}
+
 process COMBINE_METRICS {
     conda "envs/sklearn.yml"
 
@@ -200,8 +219,10 @@ workflow CCEVAL {
     MATCH_CLUSTERS(output_ch)
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_FMI(MATCH_CLUSTERS.out)
+    METRIC_F1(MATCH_CLUSTERS.out)
     metrics_ch = METRIC_ARI.out
         .concat(METRIC_FMI.out)
+        .concat(METRIC_F1.out)
         .toList()
     COMBINE_METRICS(metrics_ch)
 }
