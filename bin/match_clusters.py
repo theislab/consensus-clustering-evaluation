@@ -44,7 +44,7 @@ def match_clusters(adata, labels_col, clusters_col):
     map = {}
     while not all(cluster in map for cluster in cluster_levels):
         not_matched = [c for c in cluster_levels if c not in map.keys()]
-        print(f"Unmatched clusters: {', '.join(not_matched)}")
+        print(f"Unmatched clusters: {', '.join(str(nm) for nm in not_matched)}")
         not_matched_idx = [cluster_levels.index(c) for c in not_matched]
         matches = linear_sum_assignment(jaccard[:, not_matched_idx])
 

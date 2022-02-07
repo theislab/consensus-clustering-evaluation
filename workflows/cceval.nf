@@ -78,6 +78,23 @@ process RDS2H5AD {
     """
 }
 
+process METHOD_RANDOM {
+    conda "envs/sklearn.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("random.h5ad"), val(labels), val("random")
+
+    script:
+    """
+    method_random.py --out-file random.h5ad --labels $labels $file
+    """
+}
+
 process METHOD_SCANPY {
     conda "envs/scanpy.yml"
 
@@ -288,11 +305,14 @@ process COMBINE_METRICS {
 workflow CCEVAL {
     PROFILE(datasets_ch)
     H5AD2RDS(datasets_ch)
+    METHOD_RANDOM(datasets_ch)
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
     rds_ch = METHOD_SEURAT.out
     RDS2H5AD(rds_ch)
-    output_ch = METHOD_SCANPY.out.concat(RDS2H5AD.out)
+    output_ch = METHOD_RANDOM.out
+        .concat(METHOD_SCANPY.out)
+        .concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_AMI(MATCH_CLUSTERS.out)
