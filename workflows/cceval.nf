@@ -150,6 +150,23 @@ process MATCH_CLUSTERS {
     """
 }
 
+process H5AD2RDS_MATCHED {
+    conda "envs/zellkonverter.yml"
+
+    publishDir "$params.outdir/method_output/${name}"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        tuple val(name), path("${file.baseName}.Rds"), val(labels), val(method)
+
+    script:
+    """
+    convert_h5ad_Rds.R --out-file "${file.baseName}.Rds" $file
+    """
+}
+
 process METRIC_ARI {
     conda "envs/sklearn.yml"
 
@@ -314,6 +331,7 @@ workflow CCEVAL {
         .concat(METHOD_SCANPY.out)
         .concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
+    H5AD2RDS_MATCHED(MATCH_CLUSTERS.out)
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_AMI(MATCH_CLUSTERS.out)
     METRIC_FMI(MATCH_CLUSTERS.out)
