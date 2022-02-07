@@ -249,6 +249,25 @@ process METRIC_F1 {
     """
 }
 
+process METRIC_MCC {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        path("mcc_${name}_${method}.tsv")
+    script:
+    """
+    metric_mcc.py \\
+        --out-file "mcc_${name}_${method}.tsv" \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
+    """
+}
+
 process COMBINE_METRICS {
     conda "envs/sklearn.yml"
 
@@ -281,12 +300,14 @@ workflow CCEVAL {
     METRIC_COMPLETENESS(MATCH_CLUSTERS.out)
     METRIC_HOMOGENEITY(MATCH_CLUSTERS.out)
     METRIC_F1(MATCH_CLUSTERS.out)
+    METRIC_MCC(MATCH_CLUSTERS.out)
     metrics_ch = METRIC_ARI.out
         .concat(METRIC_AMI.out)
         .concat(METRIC_FMI.out)
         .concat(METRIC_COMPLETENESS.out)
         .concat(METRIC_HOMOGENEITY.out)
         .concat(METRIC_F1.out)
+        .concat(METRIC_MCC.out)
         .toList()
     COMBINE_METRICS(metrics_ch)
 }
