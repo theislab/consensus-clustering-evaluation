@@ -192,6 +192,44 @@ process METRIC_FMI {
     """
 }
 
+process METRIC_COMPLETENESS {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        path("completeness_${name}_${method}.tsv")
+    script:
+    """
+    metric_completeness.py \\
+        --out-file "completeness_${name}_${method}.tsv" \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
+    """
+}
+
+process METRIC_HOMOGENEITY {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(name), path(file), val(labels), val(method)
+
+    output:
+        path("homogeneity_${name}_${method}.tsv")
+    script:
+    """
+    metric_homogeneity.py \\
+        --out-file "homogeneity_${name}_${method}.tsv" \\
+        --dataset "$name" \\
+        --labels $labels \\
+        --method $method \\
+        $file
+    """
+}
+
 process METRIC_F1 {
     conda "envs/sklearn.yml"
 
@@ -240,10 +278,14 @@ workflow CCEVAL {
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_AMI(MATCH_CLUSTERS.out)
     METRIC_FMI(MATCH_CLUSTERS.out)
+    METRIC_COMPLETENESS(MATCH_CLUSTERS.out)
+    METRIC_HOMOGENEITY(MATCH_CLUSTERS.out)
     METRIC_F1(MATCH_CLUSTERS.out)
     metrics_ch = METRIC_ARI.out
         .concat(METRIC_AMI.out)
         .concat(METRIC_FMI.out)
+        .concat(METRIC_COMPLETENESS.out)
+        .concat(METRIC_HOMOGENEITY.out)
         .concat(METRIC_F1.out)
         .toList()
     COMBINE_METRICS(metrics_ch)
