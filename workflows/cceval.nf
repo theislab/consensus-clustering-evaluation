@@ -129,6 +129,23 @@ process METHOD_SEURAT {
     """
 }
 
+process METHOD_SC3 {
+    conda "envs/sc3.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("sc3.Rds"), val(labels), val("SC3")
+
+    script:
+    """
+    method_sc3.R --out-file sc3.Rds $file
+    """
+}
+
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
@@ -342,7 +359,9 @@ workflow CCEVAL {
     METHOD_RANDOM(datasets_ch)
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
+    METHOD_SC3(H5AD2RDS.out)
     rds_ch = METHOD_SEURAT.out
+        .concat(METHOD_SC3.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
