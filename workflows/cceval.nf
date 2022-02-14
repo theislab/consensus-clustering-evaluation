@@ -129,6 +129,23 @@ process METHOD_SEURAT {
     """
 }
 
+process METHOD_SIMLR {
+    conda "envs/simlr.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("simlr.Rds"), val(labels), val("SIMLR")
+
+    script:
+    """
+    method_simlr.R --out-file simlr.Rds $file
+    """
+}
+
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
@@ -342,7 +359,9 @@ workflow CCEVAL {
     METHOD_RANDOM(datasets_ch)
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
+    METHOD_SIMLR(H5AD2RDS.out)
     rds_ch = METHOD_SEURAT.out
+        .concat(METHOD_SIMLR.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
