@@ -146,6 +146,21 @@ process METHOD_SIMLR {
     """
 }
 
+process RUN_CONSTCLUST {
+    conda "envs/constclust.yml"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("constclust.h5ad"), val(labels)
+
+    script:
+    """
+    run_constclust.py --out-file constclust.h5ad $file
+    """
+}
+
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
@@ -360,6 +375,7 @@ workflow CCEVAL {
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
+    RUN_CONSTCLUST(datasets_ch)
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
     RDS2H5AD(rds_ch)
