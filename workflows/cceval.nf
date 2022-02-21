@@ -146,6 +146,23 @@ process METHOD_SIMLR {
     """
 }
 
+process METHOD_COLA {
+    conda "envs/cola.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("cola.Rds"), val(labels), val("cola")
+
+    script:
+    """
+    method_cola.R --out-file cola.Rds --labels $labels $file
+    """
+}
+
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
@@ -360,8 +377,10 @@ workflow CCEVAL {
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
+    METHOD_COLA(H5AD2RDS.out)
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
+        .concat(METHOD_COLA.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
