@@ -19,16 +19,22 @@ suppressPackageStartupMessages({
 
 run_sc3 <- function(sce, ncpus) {
 
+    message("Calculating log normalised counts...")
     sce <- scuttle::logNormCounts(sce)
     rowData(sce)$feature_symbol <- rownames(sce)
     message("Running SC3 with ", ncpus, " CPU(s)")
-    sce <- sc3_prepare(sce, n_cores = ncpus)
+    sce <- sc3_prepare(sce, n_cores = ncpus, rand_seed = 1)
     sce <- sc3_estimate_k(sce)
     n_clusters <- metadata(sce)$sc3$k_estimation
     sce <- sc3_calc_dists(sce)
     sce <- sc3_calc_transfs(sce)
     sce <- sc3_kmeans(sce, ks = n_clusters)
     sce <- sc3_calc_consens(sce)
+
+    if (nrow(sce) > 5000) {
+        message("Transferring clusters using SVM...")
+        sce <- sc3_run_svm(sce, ks = n_clusters)
+    }
 
     colData(sce)$Cluster <- colData(sce)[[paste0("sc3_", n_clusters, "_clusters")]]
 
