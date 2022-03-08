@@ -132,6 +132,8 @@ process METHOD_SEURAT {
 process METHOD_SC3 {
     conda "envs/sc3.yml"
 
+    label "process_low"
+
     publishDir "$params.outdir/method_output/${name}", mode: "copy"
 
     input:
@@ -142,7 +144,7 @@ process METHOD_SC3 {
 
     script:
     """
-    method_sc3.R --out-file sc3.Rds $file
+    method_sc3.R --out-file sc3.Rds --ncpus ${task.cpus} $file
     """
 }
 

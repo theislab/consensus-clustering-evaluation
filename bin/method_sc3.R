@@ -9,6 +9,7 @@ Usage:
 Options:
     -h --help             Show this screen.
     --out-file=<path>     Path to output file.
+    --ncpus=<cpus>        Number of CPUs to use [default: 1]
 " -> doc
 
 suppressPackageStartupMessages({
@@ -16,11 +17,12 @@ suppressPackageStartupMessages({
     library("SingleCellExperiment")
 })
 
-run_sc3 <- function(sce) {
+run_sc3 <- function(sce, ncpus) {
 
     sce <- scuttle::logNormCounts(sce)
     rowData(sce)$feature_symbol <- rownames(sce)
-    sce <- sc3_prepare(sce, n_cores = 1)
+    message("Running SC3 with ", ncpus, " CPU(s)")
+    sce <- sc3_prepare(sce, n_cores = ncpus)
     sce <- sc3_estimate_k(sce)
     n_clusters <- metadata(sce)$sc3$k_estimation
     sce <- sc3_calc_dists(sce)
@@ -28,7 +30,7 @@ run_sc3 <- function(sce) {
     sce <- sc3_kmeans(sce, ks = n_clusters)
     sce <- sc3_calc_consens(sce)
 
-    colData(sce)$Cluster <- colData(sce)[paste0("sc3_", n_clusters, "_clusters")]
+    colData(sce)$Cluster <- colData(sce)[[paste0("sc3_", n_clusters, "_clusters")]]
 
     return(sce)
 }
@@ -38,10 +40,11 @@ if (sys.nframe() == 0) {
 
     file      <- args[["<file>"]]
     out_file  <- args[["--out-file"]]
+    ncpus     <- as.numeric(args[["--ncpus"]])
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
-    sce <- run_sc3(sce)
+    sce <- run_sc3(sce, ncpus)
     message("Writing data to '", out_file, "'...")
     saveRDS(sce, out_file)
     message("Done!")
