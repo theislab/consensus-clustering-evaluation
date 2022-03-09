@@ -132,6 +132,8 @@ process METHOD_SEURAT {
 process METHOD_SIMLR {
     conda "envs/simlr.yml"
 
+    label "process_low"
+
     publishDir "$params.outdir/method_output/${name}", mode: "copy"
 
     input:
@@ -142,7 +144,58 @@ process METHOD_SIMLR {
 
     script:
     """
-    method_simlr.R --out-file simlr.Rds $file
+    method_simlr.R --out-file simlr.Rds --ncpus ${task.cpus} $file
+    """
+}
+
+process METHOD_SC3 {
+    conda "envs/sc3.yml"
+
+    label "process_low"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("sc3.Rds"), val(labels), val("SC3")
+
+    script:
+    """
+    method_sc3.R --out-file sc3.Rds --ncpus ${task.cpus} $file
+    """
+}
+
+process RUN_CONSTCLUST {
+    conda "envs/constclust.yml"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("constclust.h5ad"), val(labels)
+
+    script:
+    """
+    run_constclust.py --out-file constclust.h5ad $file
+    """
+}
+
+process METHOD_MRCC {
+    conda "envs/mrcc.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC")
+
+    script:
+    """
+    method_mrcc.py --out-file mrcc.h5ad $file
     """
 }
 
@@ -378,12 +431,17 @@ workflow CCEVAL {
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
     METHOD_COLA(H5AD2RDS.out)
+    METHOD_SC3(H5AD2RDS.out)
+    RUN_CONSTCLUST(datasets_ch)
+    METHOD_MRCC(RUN_CONSTCLUST.out)
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
+        .concat(METHOD_SC3.out)
         .concat(METHOD_COLA.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
+        .concat(METHOD_MRCC.out)
         .concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
     H5AD2RDS_MATCHED(MATCH_CLUSTERS.out)
