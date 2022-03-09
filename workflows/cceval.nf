@@ -143,7 +143,6 @@ process METHOD_SIMLR {
     script:
     """
     method_simlr.R --out-file simlr.Rds $file
-        tuple val(name), path("sc3.Rds"), val(labels), val("SC3")
     """
 }
 
@@ -412,6 +411,7 @@ workflow CCEVAL {
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
+    METHOD_SC3(H5AD2RDS.out)
     RUN_CONSTCLUST(datasets_ch)
     METHOD_MRCC(RUN_CONSTCLUST.out)
     rds_ch = METHOD_SEURAT.out
