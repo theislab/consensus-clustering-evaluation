@@ -26,16 +26,26 @@ run_cola <- function(sce, labels, ncpus) {
     message("Preparing matrix...")
     mat <- adjust_matrix(logcounts(sce))
 
-    message("Calculating partitions with ", ncpus, " CPUS(s)...")
+    message("Running cola with ", ncpus, " CPUS(s)...")
+    if (ncol(mat) > 1000) {
+        message("Using 1000 randomly selected cells to estimate k")
+        set.seed(1)
+        sel_mat <- mat[, sample(ncol(mat), 1000)]
+    } else {
+        sel_mat <- mat
+    }
     n_labels <- length(unique(colData(sce)[[labels]]))
-    min_k <- max(2, n_labels - 10)
-    max_k <- n_labels + 10
+    min_k <- max(2, n_labels - 5)
+    max_k <- n_labels + 5
     message("Min k: ", min_k, ", Max k: ", max_k)
-    res <- consensus_partition(mat, k = seq(min_k, max_k), cores = ncpus)
+    res <- consensus_partition(sel_mat, k = seq(min_k, max_k), cores = ncpus)
 
     message("Selecting best k...")
     best_k <- suggest_best_k(res)
     message("Best k: ", best_k)
+
+    message("Performing final partitioning...")
+    res <- consensus_partition(mat, k = best_k, cores = ncpus)
 
     message("Assigning clusters...")
     classes <- get_classes(res)
