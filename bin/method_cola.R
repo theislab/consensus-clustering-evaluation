@@ -49,7 +49,7 @@ run_cola <- function(sce, labels, ncpus) {
 
     message("Assigning clusters...")
     classes <- get_classes(res)
-    colData(sce)$Cluster <- classes[[paste0("k=", best_k)]]
+    colData(sce)$Cluster <- classes$class
 
     return(sce)
 }
