@@ -143,6 +143,26 @@ process METHOD_SIMLR {
     script:
     """
     method_simlr.R --out-file simlr.Rds $file
+        tuple val(name), path("sc3.Rds"), val(labels), val("SC3")
+    """
+}
+
+process METHOD_SC3 {
+    conda "envs/sc3.yml"
+
+    label "process_low"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("sc3.Rds"), val(labels), val("SC3")
+
+    script:
+    """
+    method_sc3.R --out-file sc3.Rds --ncpus ${task.cpus} $file
     """
 }
 
@@ -362,6 +382,7 @@ workflow CCEVAL {
     METHOD_SIMLR(H5AD2RDS.out)
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
+        .concat(METHOD_SC3.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
