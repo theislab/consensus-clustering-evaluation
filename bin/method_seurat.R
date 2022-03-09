@@ -32,6 +32,7 @@ run_seurat <- function(seurat) {
     message("Running Louvain community detection...")
     seurat <- FindClusters(seurat)
 
+    seurat
 }
 
 if (sys.nframe() == 0) {
