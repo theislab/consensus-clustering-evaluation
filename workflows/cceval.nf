@@ -201,7 +201,7 @@ process RUN_CONSTCLUST {
     """
 }
 
-process METHOD_MRCC {
+process METHOD_MRCC_N_Comp_Prob {
     conda "envs/mrcc.yml"
 
     publishDir "$params.outdir/method_output/${name}", mode: "copy"
@@ -210,11 +210,101 @@ process METHOD_MRCC {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC")
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC N-Comp-Prob")
 
     script:
     """
-    method_mrcc.py --out-file mrcc.h5ad $file
+    method_mrcc.py \\
+        --out-file mrcc.h5ad \\
+        --neighbour-based \\
+        --community-type component \\
+        --outlier-type probability \\
+        $file
+    """
+}
+
+process METHOD_MRCC_N_Leid_Prob {
+    conda "envs/mrcc.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC N-Leid-Prob")
+
+    script:
+    """
+    method_mrcc.py \\
+        --out-file mrcc.h5ad \\
+        --neighbour-based \\
+        --community-type leiden \\
+        --outlier-type probability \\
+        $file
+    """
+}
+
+process METHOD_MRCC_A_HDB_Prob {
+    conda "envs/mrcc.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC A-HDB-Prob")
+
+    script:
+    """
+    method_mrcc.py \\
+        --out-file mrcc.h5ad \\
+        --community-type hdbscan \\
+        --outlier-type probability \\
+        $file
+    """
+}
+
+process METHOD_MRCC_A_Louv_Prob {
+    conda "envs/mrcc.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC A-Louv-Prob")
+
+    script:
+    """
+    method_mrcc.py \\
+        --out-file mrcc.h5ad \\
+        --community-type louvain \\
+        --outlier-type probability \\
+        $file
+    """
+}
+
+process METHOD_MRCC_A_Louv_HDB {
+    conda "envs/mrcc.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC A-Louv-HDB")
+
+    script:
+    """
+    method_mrcc.py \\
+        --out-file mrcc.h5ad \\
+        --community-type louvain \\
+        --outlier-type hdbscan \\
+        $file
     """
 }
 
@@ -270,8 +360,8 @@ process METRIC_ARI {
     metric_ari.py \\
         --out-file "ari_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -290,8 +380,8 @@ process METRIC_AMI {
     metric_ami.py \\
         --out-file "ami_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -309,8 +399,8 @@ process METRIC_FMI {
     metric_fmi.py \\
         --out-file "fmi_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -328,8 +418,8 @@ process METRIC_COMPLETENESS {
     metric_completeness.py \\
         --out-file "completeness_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -347,8 +437,8 @@ process METRIC_HOMOGENEITY {
     metric_homogeneity.py \\
         --out-file "homogeneity_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -366,8 +456,8 @@ process METRIC_F1 {
     metric_F1.py \\
         --out-file "F1_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -385,8 +475,8 @@ process METRIC_MCC {
     metric_mcc.py \\
         --out-file "mcc_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -404,8 +494,8 @@ process METRIC_ECS {
     metric_ecs.R \\
         --out-file "ecs_${name}_${method}.tsv" \\
         --dataset "$name" \\
-        --labels $labels \\
-        --method $method \\
+        --labels "$labels" \\
+        --method "$method" \\
         $file
     """
 }
@@ -454,7 +544,11 @@ workflow CCEVAL {
     METHOD_COLA(H5AD2RDS.out)
     METHOD_SC3(H5AD2RDS.out)
     RUN_CONSTCLUST(datasets_ch)
-    METHOD_MRCC(RUN_CONSTCLUST.out)
+    METHOD_MRCC_N_Comp_Prob(RUN_CONSTCLUST.out)
+    METHOD_MRCC_N_Leid_Prob(RUN_CONSTCLUST.out)
+    METHOD_MRCC_A_HDB_Prob(RUN_CONSTCLUST.out)
+    METHOD_MRCC_A_Louv_Prob(RUN_CONSTCLUST.out)
+    METHOD_MRCC_A_Louv_HDB(RUN_CONSTCLUST.out)
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
         .concat(METHOD_SC3.out)
@@ -462,7 +556,11 @@ workflow CCEVAL {
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
-        .concat(METHOD_MRCC.out)
+        .concat(METHOD_MRCC_N_Comp_Prob.out)
+        .concat(METHOD_MRCC_N_Leid_Prob.out)
+        .concat(METHOD_MRCC_A_HDB_Prob.out)
+        .concat(METHOD_MRCC_A_Louv_Prob.out)
+        .concat(METHOD_MRCC_A_Louv_HDB.out)
         .concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
     H5AD2RDS_MATCHED(MATCH_CLUSTERS.out)

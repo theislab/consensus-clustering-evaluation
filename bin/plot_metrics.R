@@ -24,6 +24,7 @@ plot_metrics <- function(metrics) {
     ) +
         ggplot2::geom_jitter(size = 2, alpha = 0.8, width = 0.2) +
         ggplot2::facet_grid(.data$Metric ~ .) +
+        ggplot2::guides(x = ggplot2::guide_axis(angle = 90)) +
         ggplot2::theme_minimal() +
         ggplot2::theme(
             panel.background = ggplot2::element_rect(fill = NA),
