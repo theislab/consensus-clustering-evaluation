@@ -1,0 +1,3 @@
+[submodule "bin/multires-consensus-clustering"]
+	path = bin/multires-consensus-clustering
+	url = git@github.com:theislab/multires-consensus-clustering.git

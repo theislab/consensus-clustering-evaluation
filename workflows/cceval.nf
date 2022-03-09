@@ -166,6 +166,38 @@ process METHOD_SC3 {
     """
 }
 
+process RUN_CONSTCLUST {
+    conda "envs/constclust.yml"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("constclust.h5ad"), val(labels)
+
+    script:
+    """
+    run_constclust.py --out-file constclust.h5ad $file
+    """
+}
+
+process METHOD_MRCC {
+    conda "envs/mrcc.yml"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC")
+
+    script:
+    """
+    method_mrcc.py --out-file mrcc.h5ad $file
+    """
+}
+
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
@@ -380,12 +412,15 @@ workflow CCEVAL {
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
+    RUN_CONSTCLUST(datasets_ch)
+    METHOD_MRCC(RUN_CONSTCLUST.out)
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
         .concat(METHOD_SC3.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
+        .concat(METHOD_MRCC.out)
         .concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
     H5AD2RDS_MATCHED(MATCH_CLUSTERS.out)
