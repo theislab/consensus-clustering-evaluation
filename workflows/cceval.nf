@@ -167,6 +167,25 @@ process METHOD_SC3 {
     """
 }
 
+process METHOD_COLA {
+    conda "envs/cola.yml"
+
+    label "process_low"
+
+    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+
+    input:
+        tuple val(name), path(file), val(labels)
+
+    output:
+        tuple val(name), path("cola.Rds"), val(labels), val("cola")
+
+    script:
+    """
+    method_cola.R --out-file cola.Rds --labels $labels --ncpus ${task.cpus} $file
+    """
+}
+
 process RUN_CONSTCLUST {
     conda "envs/constclust.yml"
 
@@ -196,23 +215,6 @@ process METHOD_MRCC {
     script:
     """
     method_mrcc.py --out-file mrcc.h5ad $file
-    """
-}
-
-process METHOD_COLA {
-    conda "envs/cola.yml"
-
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
-
-    input:
-        tuple val(name), path(file), val(labels)
-
-    output:
-        tuple val(name), path("cola.Rds"), val(labels), val("cola")
-
-    script:
-    """
-    method_cola.R --out-file cola.Rds --labels $labels $file
     """
 }
 

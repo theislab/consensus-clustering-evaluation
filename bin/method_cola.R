@@ -10,6 +10,7 @@ Options:
     -h --help             Show this screen.
     --out-file=<path>     Path to output file.
     --labels=<str>        Column of obs containing cell labels.
+    --ncpus=<cpus>        Number of CPUs to use [default: 1].
 " -> doc
 
 suppressPackageStartupMessages({
@@ -17,7 +18,7 @@ suppressPackageStartupMessages({
     library("SingleCellExperiment")
 })
 
-run_cola <- function(sce, labels) {
+run_cola <- function(sce, labels, ncpus) {
 
     message("Normalising counts...")
     sce <- scuttle::logNormCounts(sce)
@@ -25,14 +26,16 @@ run_cola <- function(sce, labels) {
     message("Preparing matrix...")
     mat <- adjust_matrix(logcounts(sce))
 
-    message("Calculating partitions...")
+    message("Calculating partitions with ", ncpus, " CPUS(s)...")
     n_labels <- length(unique(colData(sce)[[labels]]))
-    min_k <- max(2, n_labels - 5)
-    max_k <- n_labels + 5
-    res <- consensus_partition(mat, k = seq(min_k, max_k))
+    min_k <- max(2, n_labels - 10)
+    max_k <- n_labels + 10
+    message("Min k: ", min_k, ", Max k: ", max_k)
+    res <- consensus_partition(mat, k = seq(min_k, max_k), cores = ncpus)
 
-    message("Selecing best k...")
+    message("Selecting best k...")
     best_k <- suggest_best_k(res)
+    message("Best k: ", best_k)
 
     message("Assigning clusters...")
     classes <- get_classes(res)
@@ -47,10 +50,11 @@ if (sys.nframe() == 0) {
     file      <- args[["<file>"]]
     out_file  <- args[["--out-file"]]
     labels    <- args[["--labels"]]
+    ncpus     <- as.numeric(args[["--ncpus"]])
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
-    sce <- run_cola(sce, labels)
+    sce <- run_cola(sce, labels, ncpus)
     message("Writing data to '", out_file, "'...")
     saveRDS(sce, out_file)
     message("Done!")
