@@ -144,7 +144,7 @@ process METHOD_SIMLR {
 
     script:
     """
-    method_simlr.R --out-file simlr.Rds --ncpus ${task.cpus} $file
+    method_simlr.R --out-file simlr.Rds --labels $labels --ncpus ${task.cpus} $file
     """
 }
 
