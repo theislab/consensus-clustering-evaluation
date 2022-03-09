@@ -132,6 +132,8 @@ process METHOD_SEURAT {
 process METHOD_SIMLR {
     conda "envs/simlr.yml"
 
+    label "process_low"
+
     publishDir "$params.outdir/method_output/${name}", mode: "copy"
 
     input:
@@ -142,7 +144,7 @@ process METHOD_SIMLR {
 
     script:
     """
-    method_simlr.R --out-file simlr.Rds $file
+    method_simlr.R --out-file simlr.Rds --ncpus ${task.cpus} $file
     """
 }
 
