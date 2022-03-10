@@ -21,6 +21,7 @@ if (sys.nframe() == 0) {
     file      <- args[["<file>"]]
     out_file  <- args[["--out-file"]]
 
+    reticulate::use_python(Sys.which("python"))
     anndata <- reticulate::import("anndata")
     message("Reading SingleCellExperiment from '", file, "'...")
     sce <- readRDS(file)

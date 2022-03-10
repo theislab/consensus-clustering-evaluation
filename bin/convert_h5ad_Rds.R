@@ -21,6 +21,7 @@ if (sys.nframe() == 0) {
     file     <- args[["<file>"]]
     out_file <- args[["--out-file"]]
 
+    reticulate::use_python(Sys.which("python"))
     anndata <- reticulate::import("anndata")
     message("Reading AnnData from '", file, "'...")
     adata <- anndata$read_h5ad(file)
