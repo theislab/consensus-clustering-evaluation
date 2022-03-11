@@ -24,7 +24,7 @@ run_cola <- function(sce, labels, ncpus) {
     sce <- scuttle::logNormCounts(sce)
 
     message("Preparing matrix...")
-    mat <- adjust_matrix(logcounts(sce))
+    mat <- adjust_matrix(as.matrix(logcounts(sce)))
 
     message("Running cola with ", ncpus, " CPUS(s)...")
     if (ncol(mat) > 1000) {
