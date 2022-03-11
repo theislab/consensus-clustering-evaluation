@@ -30,9 +30,9 @@ run_simlr <- function(sce, labels, ncpus) {
     if (ncol(sce) > 1000) {
         message("Using 1000 randomly selected cells to estimate k")
         set.seed(1)
-        sel_mat <- logcounts(sce)[, sample(ncol(sce), 1000)]
+        sel_mat <- as.matrix(logcounts(sce)[, sample(ncol(sce), 1000)])
     } else {
-        sel_mat <- logcounts(sce)
+        sel_mat <- as.matrix(logcounts(sce))
     }
     n_labels <- length(unique(colData(sce)[[labels]]))
     min_k <- max(2, n_labels - 5)
