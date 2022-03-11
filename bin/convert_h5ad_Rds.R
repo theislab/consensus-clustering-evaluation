@@ -25,7 +25,7 @@ if (sys.nframe() == 0) {
     anndata <- reticulate::import("anndata")
     message("Reading AnnData from '", file, "'...")
     adata <- anndata$read_h5ad(file)
-    sce <- AnnData2SCE(adata, verbose = TRUE)
+    sce <- AnnData2SCE(adata, X_name = "counts", verbose = TRUE)
     message("Writing SingleCellExperiment to '", out_file, "'...")
     saveRDS(sce, out_file)
     message("Done!")
