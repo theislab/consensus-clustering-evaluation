@@ -210,12 +210,12 @@ process METHOD_MRCC_N_Comp_Prob {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC N-Comp-Prob")
+        tuple val(name), path("mrcc_N-Comp-Prob.h5ad"), val(labels), val("MRCC N-Comp-Prob")
 
     script:
     """
     method_mrcc.py \\
-        --out-file mrcc.h5ad \\
+        --out-file mrcc_N-Comp-Prob.h5ad \\
         --neighbour-based \\
         --community-type component \\
         --outlier-type probability \\
@@ -232,12 +232,12 @@ process METHOD_MRCC_N_Leid_Prob {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC N-Leid-Prob")
+        tuple val(name), path("mrcc_N-Leid-Prob.h5ad"), val(labels), val("MRCC N-Leid-Prob")
 
     script:
     """
     method_mrcc.py \\
-        --out-file mrcc.h5ad \\
+        --out-file mrcc_N-Leid-Prob.h5ad \\
         --neighbour-based \\
         --community-type leiden \\
         --outlier-type probability \\
@@ -254,12 +254,12 @@ process METHOD_MRCC_A_HDB_Prob {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC A-HDB-Prob")
+        tuple val(name), path("mrcc_A-HDB-Prob.h5ad"), val(labels), val("MRCC A-HDB-Prob")
 
     script:
     """
     method_mrcc.py \\
-        --out-file mrcc.h5ad \\
+        --out-file mrcc_A-HDB-Prob.h5ad \\
         --community-type hdbscan \\
         --outlier-type probability \\
         $file
@@ -275,12 +275,12 @@ process METHOD_MRCC_A_Louv_Prob {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC A-Louv-Prob")
+        tuple val(name), path("mrcc_A-Louv-Prob.h5ad"), val(labels), val("MRCC A-Louv-Prob")
 
     script:
     """
     method_mrcc.py \\
-        --out-file mrcc.h5ad \\
+        --out-file mrcc_A-Louv-Prob.h5ad \\
         --community-type louvain \\
         --outlier-type probability \\
         $file
@@ -296,12 +296,12 @@ process METHOD_MRCC_A_Louv_HDB {
         tuple val(name), path(file), val(labels)
 
     output:
-        tuple val(name), path("mrcc.h5ad"), val(labels), val("MRCC A-Louv-HDB")
+        tuple val(name), path("mrcc_A-Louv-HDB.h5ad"), val(labels), val("MRCC A-Louv-HDB")
 
     script:
     """
     method_mrcc.py \\
-        --out-file mrcc.h5ad \\
+        --out-file mrcc_A-Louv-HDB.h5ad \\
         --community-type louvain \\
         --outlier-type hdbscan \\
         $file
