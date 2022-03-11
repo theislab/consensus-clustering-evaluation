@@ -22,6 +22,7 @@ run_sc3 <- function(sce, ncpus) {
     message("Calculating log normalised counts...")
     sce <- scuttle::logNormCounts(sce)
     rowData(sce)$feature_symbol <- rownames(sce)
+    counts(sce) <- as.matrix(counts(sce))
     message("Running SC3 with ", ncpus, " CPU(s)")
     sce <- sc3_prepare(sce, n_cores = ncpus, rand_seed = 1)
     sce <- sc3_estimate_k(sce)
