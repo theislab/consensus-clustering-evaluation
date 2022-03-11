@@ -541,7 +541,7 @@ workflow CCEVAL {
     METHOD_SCANPY(datasets_ch)
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
-    METHOD_COLA(H5AD2RDS.out)
+    // METHOD_COLA(H5AD2RDS.out)
     METHOD_SC3(H5AD2RDS.out)
     RUN_CONSTCLUST(datasets_ch)
     METHOD_MRCC_N_Comp_Prob(RUN_CONSTCLUST.out)
@@ -552,7 +552,7 @@ workflow CCEVAL {
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
         .concat(METHOD_SC3.out)
-        .concat(METHOD_COLA.out)
+        // .concat(METHOD_COLA.out)
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
