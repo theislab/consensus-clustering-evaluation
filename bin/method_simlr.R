@@ -26,13 +26,14 @@ run_simlr <- function(sce, labels, ncpus) {
     cores_ratio = ncpus / parallel::detectCores()
     message("Running SIMLR with ", ncpus, " CPU(s), cores ratio: ", cores_ratio)
 
+    mat <- as.matrix(logcounts(sce))
     message("Estimating number of clusters...")
     if (ncol(sce) > 1000) {
         message("Using 1000 randomly selected cells to estimate k")
         set.seed(1)
-        sel_mat <- as.matrix(logcounts(sce)[, sample(ncol(sce), 1000)])
+        sel_mat <- mat[, sample(ncol(sce), 1000)]
     } else {
-        sel_mat <- as.matrix(logcounts(sce))
+        sel_mat <- mat
     }
     n_labels <- length(unique(colData(sce)[[labels]]))
     min_k <- max(2, n_labels - 5)
@@ -50,7 +51,7 @@ run_simlr <- function(sce, labels, ncpus) {
     message("Estimated k: ", k_est)
 
     message("Running SIMLR...")
-    results <- SIMLR_Large_Scale(logcounts(sce), k_est)
+    results <- SIMLR_Large_Scale(mat, k_est)
     colData(sce)$Cluster <- results$y$cluster
 
     return(sce)
