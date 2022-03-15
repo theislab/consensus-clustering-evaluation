@@ -189,6 +189,8 @@ process METHOD_COLA {
 process RUN_CONSTCLUST {
     conda "envs/constclust.yml"
 
+    publishDir "$params.outdir/method_output/${name}"
+
     input:
         tuple val(name), path(file), val(labels)
 
