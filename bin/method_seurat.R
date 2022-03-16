@@ -43,13 +43,22 @@ if (sys.nframe() == 0) {
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
+    print(sce)
     message("Converting to Seurat...")
     seurat <- as.Seurat(sce, data = NULL)
     seurat <- run_seurat(seurat)
-    message("Converting to SingleCellExperiment...")
-    sce <- as.SingleCellExperiment(seurat)
-    colData(sce)$Cluster <- colData(sce)$ident
-    message("Writing data to '", out_file, "'...")
-    saveRDS(sce, out_file)
+    clusters <- data.frame(
+        Cell    = colnames(seurat),
+        Label   = seurat[["Label"]],
+        Cluster = Idents(seurat)
+    )
+    message("Writing clusters to '", out_file, "'...")
+    write.table(
+        clusters,
+        file      = out_file,
+        quote     = FALSE,
+        sep       = "\t",
+        row.names = FALSE
+    )
     message("Done!")
 }

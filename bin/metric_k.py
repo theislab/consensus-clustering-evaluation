@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-Run the Adjusted Mutual Information (AMI) metric
+Run the number of clusters (k) metric
 
 Usage:
-    metric_ari.py --out-file=<path> --dataset=<str> --method=<str> [options] <file>
+    metric_k.py --out-file=<path> --dataset=<str> --method=<str> [options] <file>
 
 Options:
     -h --help            Show this screen.
@@ -15,19 +15,19 @@ Options:
 """
 
 import pandas as pd
-from sklearn.metrics import adjusted_mutual_info_score
 
-def run_ami(clusters, dataset, labels, method):
+def run_k(clusters, dataset, labels, method):
 
-    print("Calculating AMI...")
-    score = adjusted_mutual_info_score(clusters[labels], clusters["Cluster"])
+    print("Calculating k...")
+    score = clusters["Cluster"].nunique()
+    prop = score / clusters[labels].nunique()
 
     results = pd.DataFrame(
         {
-            "Dataset": [dataset],
-            "Method": [method],
-            "Metric": ["AMI"],
-            "Score": [score]
+            "Dataset": [dataset, dataset],
+            "Method": [method, method],
+            "Metric": ["k", "k_prop"],
+            "Score": [score, prop]
         }
     )
 
@@ -48,6 +48,6 @@ if __name__=="__main__":
     clusters = pd.read_csv(file, sep="\t")
     print("Read data:")
     print(clusters)
-    results = run_ami(clusters, dataset, labels, method)
+    results = run_k(clusters, dataset, labels, method)
     print(f"Writing data to '{out_file}'...")
     results.to_csv(out_file, sep="\t", index=False)

@@ -4,16 +4,17 @@
 Run the random method
 
 Usage:
-    method_random.py --out-file=<path> --labels=<str> [options] <file>
+    method_random.py --out-file=<path> [options] <file>
 
 Options:
     -h --help            Show this screen.
-    --labels=<str>       Column of obs containing cell labels.
+    --labels=<str>       Column of obs containing cell labels [default: Label].
     --out-file=<path>    Path to output file.
 """
 
 import anndata
 import numpy as np
+import pandas as pd
 
 def run_random(adata, labels):
 
@@ -22,10 +23,17 @@ def run_random(adata, labels):
 
     rng = np.random.default_rng(seed=1)
 
-    adata.obs["Cluster"] = rng.choice(len(label_levels), adata.n_obs)
-    adata.obs["Cluster"] = adata.obs["Cluster"].astype('category')
+    cluster_labels = rng.choice(len(label_levels), adata.n_obs)
 
-    return adata
+    clusters = pd.DataFrame(
+        {
+            "Cell": adata.obs_names,
+            "Label": adata.obs["Label"],
+            "Cluster": cluster_labels
+        }
+    )
+
+    return clusters
 
 if __name__=="__main__":
     from docopt import docopt
@@ -40,6 +48,7 @@ if __name__=="__main__":
     adata = anndata.read_h5ad(file)
     print("Read data:")
     print(adata)
-    adata = run_random(adata, labels)
-    print(f"Writing data to '{out_file}'...")
-    adata.write_h5ad(out_file)
+    clusters = run_random(adata, labels)
+    print(f"Writing clusters to '{out_file}'...")
+    clusters.to_csv(out_file, sep="\t", index=False)
+    print("Done!")

@@ -9,7 +9,7 @@ Usage:
 Options:
     -h --help                  Show this screen.
     --out-file=<path>          Path to output file.
-    --neighbour-based          Whether to use neighbour-based graph connection.
+    --graph-type=<str>         Graph type for selecting clusters (neighbour, all) [default: neighbour].
     --community-type=<str>     Multi-resolution community detection method to use (component, leiden, hdbscan, louvain) [default: leiden].
     --outlier-type=<str>       Outlier detection method to use (probability, hdbscan) [default: probability].
     --outlier-thresh=<float>   Outlier detection threshold [default: 0.9].
@@ -17,6 +17,7 @@ Options:
 """
 
 import scanpy as sc
+import pandas as pd
 
 # Load MRCC from submodule as described here https://stackoverflow.com/a/50395128/4384120
 import importlib.util
@@ -72,7 +73,15 @@ def run_mrcc(adata, neighbour_based, community_type, outlier_type,
         plot_labels=False
     )
 
-    return cluster_labels
+    clusters = pd.DataFrame(
+        {
+            "Cell": adata.obs_names,
+            "Label": adata.obs["Label"],
+            "Cluster": cluster_labels
+        }
+    )
+
+    return clusters
 
 if __name__=="__main__":
     from docopt import docopt
@@ -81,7 +90,7 @@ if __name__=="__main__":
 
     file = args["<file>"]
     out_file = args["--out-file"]
-    neighbour_based = args["--neighbour-based"]
+    graph_type = args["--graph-type"]
     community_type = args["--community-type"]
     outlier_type = args["--outlier-type"]
     outlier_thresh = float(args["--outlier-thresh"])
@@ -91,7 +100,13 @@ if __name__=="__main__":
     adata = sc.read_h5ad(file)
     print("Read data:")
     print(adata)
-    adata.obs["Cluster"] = run_mrcc(
+
+    if graph_type == "neighbour":
+        neighbour_based = True
+    else:
+        neighbour_based = False
+
+    clusters = run_mrcc(
         adata,
         neighbour_based,
         community_type,
@@ -99,5 +114,6 @@ if __name__=="__main__":
         outlier_thresh,
         merge_thresh
     )
-    print(f"Writing data to '{out_file}'...")
-    adata.write_h5ad(out_file)
+    print(f"Writing clusters to '{out_file}'...")
+    clusters.to_csv(out_file, sep="\t", index=False)
+    print("Done!")

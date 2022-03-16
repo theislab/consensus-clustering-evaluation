@@ -4,12 +4,12 @@
 Run the cola method
 
 Usage:
-    method_cola.R --out-file=<path> --labels=<str> [options] <file>
+    method_cola.R --out-file=<path> [options] <file>
 
 Options:
     -h --help             Show this screen.
     --out-file=<path>     Path to output file.
-    --labels=<str>        Column of obs containing cell labels.
+    --labels=<str>        Column of obs containing cell labels [default: Label].
     --ncpus=<cpus>        Number of CPUs to use [default: 1].
 " -> doc
 
@@ -49,9 +49,12 @@ run_cola <- function(sce, labels, ncpus) {
 
     message("Assigning clusters...")
     classes <- get_classes(res)
-    colData(sce)$Cluster <- classes$class
 
-    return(sce)
+    data.frame(
+        Cell    = colnames(sce),
+        Label   = colData(sce)$Label,
+        Cluster = classes$class
+    )
 }
 
 if (sys.nframe() == 0) {
@@ -64,8 +67,15 @@ if (sys.nframe() == 0) {
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
-    sce <- run_cola(sce, labels, ncpus)
-    message("Writing data to '", out_file, "'...")
-    saveRDS(sce, out_file)
+    print(sce)
+    clusters <- run_cola(sce, labels, ncpus)
+    message("Writing clusters to '", out_file, "'...")
+    write.table(
+        clusters,
+        file      = out_file,
+        quote     = FALSE,
+        sep       = "\t",
+        row.names = FALSE
+    )
     message("Done!")
 }

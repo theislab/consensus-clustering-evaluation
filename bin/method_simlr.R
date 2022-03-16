@@ -4,12 +4,12 @@
 Run the SIMLR method
 
 Usage:
-    method_simlr.R --out-file=<path> --labels=<str> [options] <file>
+    method_simlr.R --out-file=<path> [options] <file>
 
 Options:
     -h --help             Show this screen.
     --out-file=<path>     Path to output file.
-    --labels=<str>        Column of obs containing cell labels.
+    --labels=<str>        Column of obs containing cell labels [default: Label].
     --ncpus=<cpus>        Number of CPUs to use [default: 1].
 " -> doc
 
@@ -52,9 +52,12 @@ run_simlr <- function(sce, labels, ncpus) {
 
     message("Running SIMLR...")
     results <- SIMLR_Large_Scale(mat, k_est)
-    colData(sce)$Cluster <- results$y$cluster
 
-    return(sce)
+    data.frame(
+        Cell    = colnames(sce),
+        Label   = colData(sce)$Label,
+        Cluster = results$y$cluster
+    )
 }
 
 if (sys.nframe() == 0) {
@@ -67,8 +70,15 @@ if (sys.nframe() == 0) {
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
-    sce <- run_simlr(sce, labels, ncpus)
-    message("Writing data to '", out_file, "'...")
-    saveRDS(sce, out_file)
+    print(sce)
+    clusters <- run_simlr(sce, labels, ncpus)
+    message("Writing clusters to '", out_file, "'...")
+    write.table(
+        clusters,
+        file      = out_file,
+        quote     = FALSE,
+        sep       = "\t",
+        row.names = FALSE
+    )
     message("Done!")
 }
