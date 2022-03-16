@@ -415,6 +415,26 @@ process PLOT_METRICS {
     """
 }
 
+process PLOT_UMAP {
+    conda "envs/scanpy.yml"
+
+    publishDir "$params.outdir/method_output/${dataset[0]}/umaps", mode: "copy"
+
+    input:
+        tuple val(dataset), val(clusters)
+
+    output:
+        path("${clusters[2]}.pdf")
+
+    script:
+    """
+    plot_umap.py \\
+        --out-file "${clusters[2]}.pdf" \\
+        --clusters "${clusters[1]}" \\
+        "${dataset[1]}"
+    """
+}
+
 workflow CCEVAL {
     PREP(datasets_ch)
     PREP_RDS(PREP.out)
@@ -453,6 +473,7 @@ workflow CCEVAL {
         .toList()
     COMBINE_METRICS(metrics_ch)
     PLOT_METRICS(COMBINE_METRICS.out)
+    PLOT_UMAP(PREP.out.cross(MATCH_CLUSTERS.out))
 }
 
 /*
