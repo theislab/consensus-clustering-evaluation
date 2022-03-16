@@ -14,17 +14,16 @@ Options:
 plot_metrics <- function(metrics) {
 
     message("Making metrics plots...")
-    ggplot2::ggplot(
+    base_plot <- ggplot2::ggplot(
         metrics,
         ggplot2::aes(
-            x = .data$Method, y = .data$Score,
+            y      = .data$Score,
             colour = .data$Method,
             shape  = .data$Dataset
         )
     ) +
-        ggplot2::geom_jitter(size = 2, alpha = 0.8, width = 0.2) +
-        ggplot2::facet_grid(.data$Metric ~ .) +
-        ggplot2::guides(x = ggplot2::guide_axis(angle = 90)) +
+    ggplot2::geom_jitter(size = 2, alpha = 0.8, width = 0.2) +
+    ggplot2::guides(x = ggplot2::guide_axis(angle = 90)) +
         ggplot2::theme_minimal() +
         ggplot2::theme(
             panel.background = ggplot2::element_rect(fill = NA),
@@ -32,6 +31,14 @@ plot_metrics <- function(metrics) {
             strip.text       = ggplot2::element_text(colour = "white")
         )
 
+    list(
+        base_plot +
+            ggplot2::aes(x = .data$Method) +
+            ggplot2::facet_grid(.data$Metric ~ .),
+        base_plot +
+            ggplot2::aes(x = .data$Dataset) +
+            ggplot2::facet_grid(.data$Metric ~ .)
+    )
 }
 
 if (sys.nframe() == 0) {
@@ -42,9 +49,12 @@ if (sys.nframe() == 0) {
 
     message("Reading metrics from '", file, "'...")
     metrics <- readr::read_tsv(file)
-    plot <- plot_metrics(metrics)
+    plots <- plot_metrics(metrics)
     message("Writing plots to '", out_file, "'...")
-    ggplot2::ggsave(out_file, plot = plot, width = 21, height = 29.7,
-                    units = "cm")
+    pdf(out_file, width = 8.3, height = 11.7)
+    for (plot in plots) {
+        print(plot)
+    }
+    dev.off()
     message("Done!")
 }
