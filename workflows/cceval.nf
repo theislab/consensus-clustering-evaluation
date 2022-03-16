@@ -232,6 +232,25 @@ process MATCH_CLUSTERS {
     """
 }
 
+process METRIC_K {
+    conda "envs/sklearn.yml"
+
+    input:
+        tuple val(dataset), path(file), val(method)
+
+    output:
+        path("k_${dataset}_${method}.tsv")
+
+    script:
+    """
+    metric_k.py \\
+        --out-file "k_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
+        --method "$method" \\
+        $file
+    """
+}
+
 process METRIC_ARI {
     conda "envs/sklearn.yml"
 
@@ -454,6 +473,7 @@ workflow CCEVAL {
         .concat(METHOD_SC3.out)
         .concat(METHOD_COLA.out)
     MATCH_CLUSTERS(output_ch)
+    METRIC_K(MATCH_CLUSTERS.out)
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_AMI(MATCH_CLUSTERS.out)
     METRIC_FMI(MATCH_CLUSTERS.out)
@@ -462,7 +482,8 @@ workflow CCEVAL {
     METRIC_F1(MATCH_CLUSTERS.out)
     METRIC_MCC(MATCH_CLUSTERS.out)
     METRIC_ECS(MATCH_CLUSTERS.out)
-    metrics_ch = METRIC_ARI.out
+    metrics_ch = METRIC_K.out
+        .concat(METRIC_ARI.out)
         .concat(METRIC_AMI.out)
         .concat(METRIC_FMI.out)
         .concat(METRIC_COMPLETENESS.out)

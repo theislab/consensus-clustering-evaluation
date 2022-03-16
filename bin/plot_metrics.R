@@ -41,6 +41,41 @@ plot_metrics <- function(metrics) {
     )
 }
 
+plot_k <- function(metrics) {
+
+    metrics <- dplyr::filter(metrics, .data$Metric == "k")
+
+    ref_lines <- dplyr::filter(metrics, .data$Method == "random")
+
+    plot <- ggplot2::ggplot(
+        metrics,
+        ggplot2::aes(
+            x    = .data$Method,
+            y    = .data$Score,
+            fill = .data$Method
+        )
+    ) +
+        ggplot2::geom_col() +
+        ggplot2::geom_hline(
+            data = ref_lines,
+            ggplot2::aes(yintercept = .data$Score),
+            colour = "red"
+        ) +
+        ggplot2::guides(x = ggplot2::guide_axis(angle = 90)) +
+        ggplot2::labs(y = "Number of clusters") +
+        ggplot2::facet_grid(.data$Dataset ~ ., scales = "free_y") +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(
+            legend.position  = "none",
+            panel.background = ggplot2::element_rect(fill = NA),
+            strip.background = ggplot2::element_rect(fill = "black"),
+            strip.text       = ggplot2::element_text(colour = "white")
+        )
+
+    list(plot)
+
+}
+
 if (sys.nframe() == 0) {
     args <- docopt::docopt(doc)
 
@@ -48,8 +83,12 @@ if (sys.nframe() == 0) {
     out_file <- args[["--out-file"]]
 
     message("Reading metrics from '", file, "'...")
-    metrics <- readr::read_tsv(file)
-    plots <- plot_metrics(metrics)
+    all_metrics <- readr::read_tsv(file)
+    metrics <- dplyr::filter(all_metrics, !(Metric %in% c("k", "k_prop")))
+    metrics_plots <- plot_metrics(metrics)
+    k_metrics <- dplyr::filter(all_metrics, Metric %in% c("k", "k_prop"))
+    k_plots <- plot_k(k_metrics)
+    plots <- c(metrics_plots, k_plots)
     message("Writing plots to '", out_file, "'...")
     pdf(out_file, width = 8.3, height = 11.7)
     for (plot in plots) {
