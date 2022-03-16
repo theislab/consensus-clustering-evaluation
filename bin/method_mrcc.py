@@ -9,7 +9,7 @@ Usage:
 Options:
     -h --help                  Show this screen.
     --out-file=<path>          Path to output file.
-    --neighbour-based          Whether to use neighbour-based graph connection.
+    --graph-type=<str>         Graph type for selecting clusters (neighbour, all) [default: neighbour].
     --community-type=<str>     Multi-resolution community detection method to use (component, leiden, hdbscan, louvain) [default: leiden].
     --outlier-type=<str>       Outlier detection method to use (probability, hdbscan) [default: probability].
     --outlier-thresh=<float>   Outlier detection threshold [default: 0.9].
@@ -81,7 +81,7 @@ if __name__=="__main__":
 
     file = args["<file>"]
     out_file = args["--out-file"]
-    neighbour_based = args["--neighbour-based"]
+    graph_type = args["--graph-type"]
     community_type = args["--community-type"]
     outlier_type = args["--outlier-type"]
     outlier_thresh = float(args["--outlier-thresh"])
@@ -91,6 +91,12 @@ if __name__=="__main__":
     adata = sc.read_h5ad(file)
     print("Read data:")
     print(adata)
+
+    if graph_type == "neighbour":
+        neighbour_based = True
+    else:
+        neighbour_based = False
+
     adata.obs["Cluster"] = run_mrcc(
         adata,
         neighbour_based,

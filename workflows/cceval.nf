@@ -32,6 +32,19 @@ datasets_ch = Channel
         )
     }
 
+mrcc_ch = Channel
+    .fromList(params.mrcc).
+    map { mrcc ->
+        tuple(
+            mrcc.name,
+            mrcc.graph_type,
+            mrcc.community_type,
+            mrcc.outlier_type,
+            mrcc.outlier_thresh,
+            mrcc.merge_thresh
+        )
+    }
+
 process PREP {
     conda "envs/scanpy.yml"
 
@@ -208,109 +221,27 @@ process RUN_CONSTCLUST {
     """
 }
 
-process METHOD_MRCC_N_Comp_Prob {
+process METHOD_MRCC {
     conda "envs/mrcc.yml"
 
     publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(dataset), path(file)
+        tuple val(dataset), path(file), val(name), val(graph_type), val(community_type),
+        val(outlier_type), val(outlier_thresh), val(merge_thresh)
 
     output:
-        tuple val(dataset), path("mrcc_N-Comp-Prob.h5ad"), val("MRCC N-Comp-Prob")
+        tuple val(dataset), path("${name}.h5ad"), val(name)
 
     script:
     """
     method_mrcc.py \\
-        --out-file mrcc_N-Comp-Prob.h5ad \\
-        --neighbour-based \\
-        --community-type component \\
-        --outlier-type probability \\
-        $file
-    """
-}
-
-process METHOD_MRCC_N_Leid_Prob {
-    conda "envs/mrcc.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
-    input:
-        tuple val(dataset), path(file)
-
-    output:
-        tuple val(dataset), path("mrcc_N-Leid-Prob.h5ad"), val("MRCC N-Leid-Prob")
-
-    script:
-    """
-    method_mrcc.py \\
-        --out-file mrcc_N-Leid-Prob.h5ad \\
-        --neighbour-based \\
-        --community-type leiden \\
-        --outlier-type probability \\
-        $file
-    """
-}
-
-process METHOD_MRCC_A_HDB_Prob {
-    conda "envs/mrcc.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
-    input:
-        tuple val(dataset), path(file)
-
-    output:
-        tuple val(dataset), path("mrcc_A-HDB-Prob.h5ad"), val("MRCC A-HDB-Prob")
-
-    script:
-    """
-    method_mrcc.py \\
-        --out-file mrcc_A-HDB-Prob.h5ad \\
-        --community-type hdbscan \\
-        --outlier-type probability \\
-        $file
-    """
-}
-
-process METHOD_MRCC_A_Louv_Prob {
-    conda "envs/mrcc.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
-    input:
-        tuple val(dataset), path(file)
-
-    output:
-        tuple val(dataset), path("mrcc_A-Louv-Prob.h5ad"), val("MRCC A-Louv-Prob")
-
-    script:
-    """
-    method_mrcc.py \\
-        --out-file mrcc_A-Louv-Prob.h5ad \\
-        --community-type louvain \\
-        --outlier-type probability \\
-        $file
-    """
-}
-
-process METHOD_MRCC_A_Louv_HDB {
-    conda "envs/mrcc.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
-    input:
-        tuple val(dataset), path(file)
-
-    output:
-        tuple val(dataset), path("mrcc_A-Louv-HDB.h5ad"), val("MRCC A-Louv-HDB")
-
-    script:
-    """
-    method_mrcc.py \\
-        --out-file mrcc_A-Louv-HDB.h5ad \\
-        --community-type louvain \\
-        --outlier-type hdbscan \\
+        --out-file ${name}.h5ad \\
+        --graph-type ${graph_type} \\
+        --community-type ${community_type} \\
+        --outlier-type ${outlier_type} \\
+        --outlier-thresh ${outlier_thresh} \\
+        --merge-thresh ${merge_thresh} \\
         $file
     """
 }
@@ -542,11 +473,7 @@ workflow CCEVAL {
     // METHOD_COLA(PREP_RDS.out)
     METHOD_SC3(PREP_RDS.out)
     RUN_CONSTCLUST(PREP.out)
-    METHOD_MRCC_N_Comp_Prob(RUN_CONSTCLUST.out)
-    METHOD_MRCC_N_Leid_Prob(RUN_CONSTCLUST.out)
-    METHOD_MRCC_A_HDB_Prob(RUN_CONSTCLUST.out)
-    METHOD_MRCC_A_Louv_Prob(RUN_CONSTCLUST.out)
-    METHOD_MRCC_A_Louv_HDB(RUN_CONSTCLUST.out)
+    METHOD_MRCC(RUN_CONSTCLUST.out.combine(mrcc_ch))
     rds_ch = METHOD_SEURAT.out
         .concat(METHOD_SIMLR.out)
         .concat(METHOD_SC3.out)
@@ -554,11 +481,7 @@ workflow CCEVAL {
     RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
-        .concat(METHOD_MRCC_N_Comp_Prob.out)
-        .concat(METHOD_MRCC_N_Leid_Prob.out)
-        .concat(METHOD_MRCC_A_HDB_Prob.out)
-        .concat(METHOD_MRCC_A_Louv_Prob.out)
-        .concat(METHOD_MRCC_A_Louv_HDB.out)
+        .concat(METHOD_MRCC.out)
         .concat(RDS2H5AD.out)
     MATCH_CLUSTERS(output_ch)
     H5AD2RDS_MATCHED(MATCH_CLUSTERS.out)
