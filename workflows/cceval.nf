@@ -144,7 +144,7 @@ process METHOD_SIMLR {
 process METHOD_SC3 {
     conda "envs/sc3.yml"
 
-    label "process_low"
+    label "process_medium"
 
     input:
         tuple val(dataset), path(file)
@@ -161,13 +161,13 @@ process METHOD_SC3 {
 process METHOD_COLA {
     conda "envs/cola.yml"
 
-    label "process_low"
+    label "process_high"
 
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("cola.tsv") val("cola")
+        tuple val(dataset), path("cola.tsv"), val("cola")
 
     script:
     """
@@ -422,7 +422,7 @@ workflow CCEVAL {
     METHOD_SCANPY(PREP.out)
     METHOD_SEURAT(PREP_RDS.out)
     METHOD_SIMLR(PREP_RDS.out)
-    // METHOD_COLA(PREP_RDS.out)
+    METHOD_COLA(PREP_RDS.out)
     METHOD_SC3(PREP_RDS.out)
     RUN_CONSTCLUST(PREP.out)
     METHOD_MRCC(RUN_CONSTCLUST.out.combine(mrcc_ch))
@@ -432,7 +432,7 @@ workflow CCEVAL {
         .concat(METHOD_SEURAT.out)
         .concat(METHOD_SIMLR.out)
         .concat(METHOD_SC3.out)
-        // .concat(METHOD_COLA.out)
+        .concat(METHOD_COLA.out)
     MATCH_CLUSTERS(output_ch)
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_AMI(MATCH_CLUSTERS.out)
