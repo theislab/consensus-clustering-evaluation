@@ -32,15 +32,18 @@ datasets_ch = Channel
         )
     }
 
-process PROFILE {
+process PREP {
     conda "envs/scanpy.yml"
 
     input:
         tuple val(name), path(file), val(labels)
 
+    output:
+        tuple val(name), path(file), val(labels)
+
     script:
     """
-    profile_dataset.py --name "$name" --labels "$labels" $file
+    prep_dataset.py --name "$name" --labels "$labels" $file
     """
 }
 
@@ -537,10 +540,10 @@ process PLOT_METRICS {
 }
 
 workflow CCEVAL {
-    PROFILE(datasets_ch)
-    H5AD2RDS(datasets_ch)
-    METHOD_RANDOM(datasets_ch)
-    METHOD_SCANPY(datasets_ch)
+    PREP(datasets_ch)
+    H5AD2RDS(PREP.out)
+    METHOD_RANDOM(PREP.out)
+    METHOD_SCANPY(PREP.out)
     METHOD_SEURAT(H5AD2RDS.out)
     METHOD_SIMLR(H5AD2RDS.out)
     // METHOD_COLA(H5AD2RDS.out)

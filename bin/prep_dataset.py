@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-Profile dataset
+Prepare dataset
 
 Usage:
-    profile_dataset.py --name=<str> --labels=<str> [options] <file>
+    prep_dataset.py --name=<str> --labels=<str> [options] <file>
 
 Options:
     -h --help        Show this screen.
@@ -14,7 +14,7 @@ Options:
 
 import scanpy as sc
 
-def profile_dataset(name, file, labels):
+def prep_dataset(name, file, labels):
     adata = sc.read_h5ad(file)
 
     print(name)
@@ -33,4 +33,4 @@ if __name__=="__main__":
     name = args["--name"]
     labels = args["--labels"]
 
-    adata = profile_dataset(name, file, labels)
+    adata = prep_dataset(name, file, labels)
