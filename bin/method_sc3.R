@@ -38,9 +38,11 @@ run_sc3 <- function(sce, ncpus) {
         sce <- sc3_run_svm(sce, ks = n_clusters)
     }
 
-    colData(sce)$Cluster <- colData(sce)[[paste0("sc3_", n_clusters, "_clusters")]]
-
-    return(sce)
+    data.frame(
+        Cell    = colnames(sce),
+        Label   = colData(sce)$Label,
+        Cluster = colData(sce)[[paste0("sc3_", n_clusters, "_clusters")]]
+    )
 }
 
 if (sys.nframe() == 0) {
@@ -52,8 +54,15 @@ if (sys.nframe() == 0) {
 
     message("Reading data from '", file, "'...")
     sce <- readRDS(file)
-    sce <- run_sc3(sce, ncpus)
-    message("Writing data to '", out_file, "'...")
-    saveRDS(sce, out_file)
+    print(sce)
+    clusters <- run_sc3(sce, ncpus)
+    message("Writing clusters to '", out_file, "'...")
+    write.table(
+        clusters,
+        file      = out_file,
+        quote     = FALSE,
+        sep       = "\t",
+        row.names = FALSE
+    )
     message("Done!")
 }

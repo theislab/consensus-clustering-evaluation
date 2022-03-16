@@ -12,6 +12,7 @@ Options:
 """
 
 import scanpy as sc
+import pandas as pd
 
 def run_scanpy(adata):
 
@@ -28,9 +29,16 @@ def run_scanpy(adata):
     sc.pp.neighbors(adata)
     print(f"Running Leiden community detection...")
     sc.tl.leiden(adata)
-    adata.obs["Cluster"] = adata.obs["leiden"]
 
-    return adata
+    clusters = pd.DataFrame(
+        {
+            "Cell": adata.obs_names,
+            "Label": adata.obs["Label"],
+            "Cluster": adata.obs["leiden"]
+        }
+    )
+
+    return clusters
 
 if __name__=="__main__":
     from docopt import docopt
@@ -44,6 +52,7 @@ if __name__=="__main__":
     adata = sc.read_h5ad(file)
     print("Read data:")
     print(adata)
-    adata = run_scanpy(adata)
-    print(f"Writing data to '{out_file}'...")
-    adata.write_h5ad(out_file)
+    clusters = run_scanpy(adata)
+    print(f"Writing clusters to '{out_file}'...")
+    clusters.to_csv(out_file, sep="\t", index=False)
+    print("Done!")

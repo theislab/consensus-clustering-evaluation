@@ -13,29 +13,29 @@ Options:
     --clusters=<str>     Column of obs containing cluster labels [default: Cluster].
 """
 
-import anndata as ad
 import numpy as np
+import pandas as pd
 from scipy.spatial import distance
 from scipy.optimize import linear_sum_assignment
 
-def match_clusters(adata, labels_col, clusters_col):
+def match_clusters(clusters, labels_col, clusters_col):
 
     print(f"Matching clusters in '{clusters_col}' to labels in '{labels_col}'...")
 
-    adata.obs[labels_col] = adata.obs[labels_col].astype("category")
-    labels = list(adata.obs[labels_col])
-    label_levels = list(adata.obs[labels_col].cat.categories)
+    clusters[labels_col] = clusters[labels_col].astype("category")
+    labels = list(clusters[labels_col])
+    label_levels = list(clusters[labels_col].cat.categories)
 
-    adata.obs[clusters_col] = adata.obs[clusters_col].astype("category")
-    clusters = list(adata.obs[clusters_col])
-    cluster_levels = list(adata.obs[clusters_col].cat.categories)
+    clusters[clusters_col] = clusters[clusters_col].astype("category")
+    cluster_labels = list(clusters[clusters_col])
+    cluster_levels = list(clusters[clusters_col].cat.categories)
 
     jaccard = np.zeros((len(label_levels), len(cluster_levels)))
     combos = [(l, c) for l in label_levels for c in cluster_levels]
 
     for label, cluster in combos:
         labels_bin = [1 if l == label else 0 for l in labels]
-        clusters_bin = [1 if c == cluster else 0 for c in clusters]
+        clusters_bin = [1 if c == cluster else 0 for c in cluster_labels]
 
         label_idx = label_levels.index(label)
         cluster_idx = cluster_levels.index(cluster)
@@ -56,10 +56,10 @@ def match_clusters(adata, labels_col, clusters_col):
             map[cluster_level] = label_level
 
     print("All clusters matched")
-    adata.obs["ClusterMatched"] = adata.obs[clusters_col]
-    adata.obs = adata.obs.replace(dict(ClusterMatched = map))
+    clusters["ClusterMatched"] = clusters[clusters_col]
+    clusters = clusters.replace(dict(ClusterMatched = map))
 
-    return adata
+    return clusters
 
 if __name__=="__main__":
     from docopt import docopt
@@ -68,13 +68,13 @@ if __name__=="__main__":
 
     file = args["<file>"]
     out_file = args["--out-file"]
-    labels = args["--labels"]
-    clusters = args["--clusters"]
+    label_col = args["--labels"]
+    cluster_col = args["--clusters"]
 
     print(f"Reading data from '{file}'...")
-    adata = ad.read_h5ad(file)
+    clusters = pd.read_csv(file, sep="\t")
     print("Read data:")
-    print(adata)
-    adata = match_clusters(adata, labels, clusters)
+    print(clusters)
+    clusters = match_clusters(clusters, label_col, cluster_col)
     print(f"Writing data to '{out_file}'...")
-    adata.write_h5ad(out_file)
+    clusters.to_csv(out_file, sep="\t", index=False)

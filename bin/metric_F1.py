@@ -18,12 +18,12 @@ import anndata as ad
 import pandas as pd
 from sklearn.metrics import f1_score
 
-def run_F1(adata, dataset, labels, method):
+def run_F1(clusters, dataset, labels, method):
 
     print("Calculating F1...")
     score = f1_score(
-        adata.obs[labels],
-        adata.obs["ClusterMatched"],
+        clusters[labels],
+        clusters["ClusterMatched"],
         average="micro"
     )
 
@@ -50,9 +50,9 @@ if __name__=="__main__":
     method = args["--method"]
 
     print(f"Reading data from '{file}'...")
-    adata = ad.read_h5ad(file)
+    clusters = pd.read_csv(file, sep="\t")
     print("Read data:")
-    print(adata)
-    results = run_F1(adata, dataset, labels, method)
+    print(clusters)
+    results = run_F1(clusters, dataset, labels, method)
     print(f"Writing data to '{out_file}'...")
     results.to_csv(out_file, sep="\t", index=False)

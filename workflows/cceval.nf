@@ -79,71 +79,48 @@ process PREP_RDS {
     """
 }
 
-process RDS2H5AD {
-    conda "envs/zellkonverter.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
-    input:
-        tuple val(dataset), path(file), val(method)
-
-    output:
-        tuple val(dataset), path("${method}.h5ad"), val(method)
-
-    script:
-    """
-    convert_Rds_h5ad.R --out-file "${method}.h5ad" $file
-    """
-}
-
 process METHOD_RANDOM {
     conda "envs/sklearn.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("random.h5ad"), val("random")
+        tuple val(dataset), path("random.tsv"), val("random")
 
     script:
     """
-    method_random.py --out-file random.h5ad $file
+    method_random.py --out-file random.tsv $file
     """
 }
 
 process METHOD_SCANPY {
     conda "envs/scanpy.yml"
 
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("scanpy.h5ad"), val("scanpy")
+        tuple val(dataset), path("scanpy.tsv"), val("scanpy")
 
     script:
     """
-    method_scanpy.py --out-file scanpy.h5ad $file
+    method_scanpy.py --out-file scanpy.tsv $file
     """
 }
 
 process METHOD_SEURAT {
     conda "envs/seurat.yml"
 
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("seurat.Rds"), val("Seurat")
+        tuple val(dataset), path("seurat.tsv"), val("Seurat")
 
     script:
     """
-    method_seurat.R --out-file seurat.Rds $file
+    method_seurat.R --out-file seurat.tsv $file
     """
 }
 
@@ -152,17 +129,15 @@ process METHOD_SIMLR {
 
     label "process_low"
 
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("simlr.Rds"), val("SIMLR")
+        tuple val(dataset), path("simlr.tsv"), val("SIMLR")
 
     script:
     """
-    method_simlr.R --out-file simlr.Rds --ncpus ${task.cpus} $file
+    method_simlr.R --out-file simlr.tsv --ncpus ${task.cpus} $file
     """
 }
 
@@ -171,17 +146,15 @@ process METHOD_SC3 {
 
     label "process_low"
 
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("sc3.Rds"), val("SC3")
+        tuple val(dataset), path("sc3.tsv"), val("SC3")
 
     script:
     """
-    method_sc3.R --out-file sc3.Rds --ncpus ${task.cpus} $file
+    method_sc3.R --out-file sc3.tsv --ncpus ${task.cpus} $file
     """
 }
 
@@ -190,17 +163,15 @@ process METHOD_COLA {
 
     label "process_low"
 
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
     input:
         tuple val(dataset), path(file)
 
     output:
-        tuple val(dataset), path("cola.Rds") val("cola")
+        tuple val(dataset), path("cola.tsv") val("cola")
 
     script:
     """
-    method_cola.R --out-file cola.Rds --ncpus ${task.cpus} $file
+    method_cola.R --out-file cola.tsv --ncpus ${task.cpus} $file
     """
 }
 
@@ -224,19 +195,17 @@ process RUN_CONSTCLUST {
 process METHOD_MRCC {
     conda "envs/mrcc.yml"
 
-    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
-
     input:
         tuple val(dataset), path(file), val(name), val(graph_type), val(community_type),
         val(outlier_type), val(outlier_thresh), val(merge_thresh)
 
     output:
-        tuple val(dataset), path("${name}.h5ad"), val(name)
+        tuple val(dataset), path("${name}.tsv"), val(name)
 
     script:
     """
     method_mrcc.py \\
-        --out-file ${name}.h5ad \\
+        --out-file ${name}.tsv \\
         --graph-type ${graph_type} \\
         --community-type ${community_type} \\
         --outlier-type ${outlier_type} \\
@@ -249,34 +218,17 @@ process METHOD_MRCC {
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
-    publishDir "$params.outdir/method_output/${dataset}"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
         tuple val(dataset), path(file), val(method)
 
     output:
-        tuple val(dataset), path("${method}_matched.h5ad"), val(method)
+        tuple val(dataset), path("${method}_clusters.tsv"), val(method)
 
     script:
     """
-    match_clusters.py --out-file "${method}_matched.h5ad" $file
-    """
-}
-
-process H5AD2RDS_MATCHED {
-    conda "envs/zellkonverter.yml"
-
-    publishDir "$params.outdir/method_output/${dataset}"
-
-    input:
-        tuple val(dataset), path(file), val(method)
-
-    output:
-        tuple val(dataset), path("${file.baseName}.Rds"), val(method)
-
-    script:
-    """
-    convert_h5ad_Rds.R --out-file "${file.baseName}.Rds" $file
+    match_clusters.py --out-file "${method}_clusters.tsv" $file
     """
 }
 
@@ -474,17 +426,14 @@ workflow CCEVAL {
     METHOD_SC3(PREP_RDS.out)
     RUN_CONSTCLUST(PREP.out)
     METHOD_MRCC(RUN_CONSTCLUST.out.combine(mrcc_ch))
-    rds_ch = METHOD_SEURAT.out
-        .concat(METHOD_SIMLR.out)
-        .concat(METHOD_SC3.out)
-        // .concat(METHOD_COLA.out)
-    RDS2H5AD(rds_ch)
     output_ch = METHOD_RANDOM.out
         .concat(METHOD_SCANPY.out)
         .concat(METHOD_MRCC.out)
-        .concat(RDS2H5AD.out)
+        .concat(METHOD_SEURAT.out)
+        .concat(METHOD_SIMLR.out)
+        .concat(METHOD_SC3.out)
+        // .concat(METHOD_COLA.out)
     MATCH_CLUSTERS(output_ch)
-    H5AD2RDS_MATCHED(MATCH_CLUSTERS.out)
     METRIC_ARI(MATCH_CLUSTERS.out)
     METRIC_AMI(MATCH_CLUSTERS.out)
     METRIC_FMI(MATCH_CLUSTERS.out)
@@ -492,7 +441,7 @@ workflow CCEVAL {
     METRIC_HOMOGENEITY(MATCH_CLUSTERS.out)
     METRIC_F1(MATCH_CLUSTERS.out)
     METRIC_MCC(MATCH_CLUSTERS.out)
-    METRIC_ECS(H5AD2RDS_MATCHED.out)
+    METRIC_ECS(MATCH_CLUSTERS.out)
     metrics_ch = METRIC_ARI.out
         .concat(METRIC_AMI.out)
         .concat(METRIC_FMI.out)

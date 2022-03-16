@@ -18,10 +18,10 @@ suppressPackageStartupMessages({
     library("SingleCellExperiment")
 })
 
-run_ecs <- function(sce, dataset, labels, method) {
+run_ecs <- function(clusters, dataset, labels, method) {
 
     message("Calculating ECS...")
-    score <- ClustAssess::element_sim(sce[[labels]], sce[["Cluster"]])
+    score <- ClustAssess::element_sim(clusters[[labels]], clusters[["Cluster"]])
 
     data.frame(
         Dataset = dataset,
@@ -41,10 +41,10 @@ if (sys.nframe() == 0) {
     method    <- args[["--method"]]
 
     message("Reading data from '", file, "'...")
-    sce <- readRDS(file)
+    clusters <- read.table(file, sep = "\t", header = TRUE)
     message("Read data:")
-    print(sce)
-    results <- run_ecs(sce, dataset, labels, method)
+    print(head(clusters))
+    results <- run_ecs(clusters, dataset, labels, method)
     message("Writing data to '", out_file, "'...")
     write.table(results, out_file, quote = FALSE, sep = "\t", row.names = FALSE)
     message("Done!")

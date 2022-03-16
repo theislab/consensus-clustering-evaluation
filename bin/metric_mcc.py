@@ -18,10 +18,10 @@ import anndata as ad
 import pandas as pd
 from sklearn.metrics import matthews_corrcoef
 
-def run_MCC(adata, dataset, labels, method):
+def run_MCC(clusters, dataset, labels, method):
 
     print("Calculating MCC...")
-    score = matthews_corrcoef(adata.obs[labels], adata.obs["ClusterMatched"])
+    score = matthews_corrcoef(clusters[labels], clusters["ClusterMatched"])
 
     results = pd.DataFrame(
         {
@@ -46,9 +46,9 @@ if __name__=="__main__":
     method = args["--method"]
 
     print(f"Reading data from '{file}'...")
-    adata = ad.read_h5ad(file)
+    clusters = pd.read_csv(file, sep="\t")
     print("Read data:")
-    print(adata)
-    results = run_MCC(adata, dataset, labels, method)
+    print(clusters)
+    results = run_MCC(clusters, dataset, labels, method)
     print(f"Writing data to '{out_file}'...")
     results.to_csv(out_file, sep="\t", index=False)

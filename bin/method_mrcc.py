@@ -17,6 +17,7 @@ Options:
 """
 
 import scanpy as sc
+import pandas as pd
 
 # Load MRCC from submodule as described here https://stackoverflow.com/a/50395128/4384120
 import importlib.util
@@ -72,7 +73,15 @@ def run_mrcc(adata, neighbour_based, community_type, outlier_type,
         plot_labels=False
     )
 
-    return cluster_labels
+    clusters = pd.DataFrame(
+        {
+            "Cell": adata.obs_names,
+            "Label": adata.obs["Label"],
+            "Cluster": cluster_labels
+        }
+    )
+
+    return clusters
 
 if __name__=="__main__":
     from docopt import docopt
@@ -97,7 +106,7 @@ if __name__=="__main__":
     else:
         neighbour_based = False
 
-    adata.obs["Cluster"] = run_mrcc(
+    clusters = run_mrcc(
         adata,
         neighbour_based,
         community_type,
@@ -105,5 +114,6 @@ if __name__=="__main__":
         outlier_thresh,
         merge_thresh
     )
-    print(f"Writing data to '{out_file}'...")
-    adata.write_h5ad(out_file)
+    print(f"Writing clusters to '{out_file}'...")
+    clusters.to_csv(out_file, sep="\t", index=False)
+    print("Done!")
