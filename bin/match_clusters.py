@@ -4,13 +4,13 @@
 Match cluster labels using the Hungarian algorithm
 
 Usage:
-    match_clusters.py --out-file=<path> --labels=<str> --clusters=<str> [options] <file>
+    match_clusters.py --out-file=<path> [options] <file>
 
 Options:
     -h --help            Show this screen.
     --out-file=<path>    Path to output file.
-    --labels=<str>       Column of obs containing cell labels.
-    --clusters=<str>     Column of obs containing cluster labels.
+    --labels=<str>       Column of obs containing cell labels [default: Label].
+    --clusters=<str>     Column of obs containing cluster labels [default: Cluster].
 """
 
 import anndata as ad

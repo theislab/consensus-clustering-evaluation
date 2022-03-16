@@ -4,11 +4,11 @@
 Run the random method
 
 Usage:
-    method_random.py --out-file=<path> --labels=<str> [options] <file>
+    method_random.py --out-file=<path> [options] <file>
 
 Options:
     -h --help            Show this screen.
-    --labels=<str>       Column of obs containing cell labels.
+    --labels=<str>       Column of obs containing cell labels [default: Label].
     --out-file=<path>    Path to output file.
 """
 

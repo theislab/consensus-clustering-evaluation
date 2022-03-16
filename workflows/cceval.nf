@@ -35,28 +35,30 @@ datasets_ch = Channel
 process PREP {
     conda "envs/scanpy.yml"
 
+    publishDir "$params.outdir/prepped_datasets"
+
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file), val(labels)
 
     output:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path("${dataset}.h5ad")
 
     script:
     """
-    prep_dataset.py --name "$name" --labels "$labels" $file
+    prep_dataset.py --name "$dataset" --labels "$labels" --out-file "${dataset}.h5ad" $file
     """
 }
 
-process H5AD2RDS {
+process PREP_RDS {
     conda "envs/zellkonverter.yml"
 
-    publishDir "$params.outdir/rds_datasets"
+    publishDir "$params.outdir/prepped_datasets"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("${file.baseName}.Rds"), val(labels)
+        tuple val(dataset), path("${file.baseName}.Rds")
 
     script:
     """
@@ -67,13 +69,13 @@ process H5AD2RDS {
 process RDS2H5AD {
     conda "envs/zellkonverter.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        tuple val(name), path("${method}.h5ad"), val(labels), val(method)
+        tuple val(dataset), path("${method}.h5ad"), val(method)
 
     script:
     """
@@ -84,30 +86,30 @@ process RDS2H5AD {
 process METHOD_RANDOM {
     conda "envs/sklearn.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("random.h5ad"), val(labels), val("random")
+        tuple val(dataset), path("random.h5ad"), val("random")
 
     script:
     """
-    method_random.py --out-file random.h5ad --labels $labels $file
+    method_random.py --out-file random.h5ad $file
     """
 }
 
 process METHOD_SCANPY {
     conda "envs/scanpy.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("scanpy.h5ad"), val(labels), val("scanpy")
+        tuple val(dataset), path("scanpy.h5ad"), val("scanpy")
 
     script:
     """
@@ -118,13 +120,13 @@ process METHOD_SCANPY {
 process METHOD_SEURAT {
     conda "envs/seurat.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("seurat.Rds"), val(labels), val("Seurat")
+        tuple val(dataset), path("seurat.Rds"), val("Seurat")
 
     script:
     """
@@ -137,17 +139,17 @@ process METHOD_SIMLR {
 
     label "process_low"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("simlr.Rds"), val(labels), val("SIMLR")
+        tuple val(dataset), path("simlr.Rds"), val("SIMLR")
 
     script:
     """
-    method_simlr.R --out-file simlr.Rds --labels $labels --ncpus ${task.cpus} $file
+    method_simlr.R --out-file simlr.Rds --ncpus ${task.cpus} $file
     """
 }
 
@@ -156,13 +158,13 @@ process METHOD_SC3 {
 
     label "process_low"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("sc3.Rds"), val(labels), val("SC3")
+        tuple val(dataset), path("sc3.Rds"), val("SC3")
 
     script:
     """
@@ -175,30 +177,30 @@ process METHOD_COLA {
 
     label "process_low"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("cola.Rds"), val(labels), val("cola")
+        tuple val(dataset), path("cola.Rds") val("cola")
 
     script:
     """
-    method_cola.R --out-file cola.Rds --labels $labels --ncpus ${task.cpus} $file
+    method_cola.R --out-file cola.Rds --ncpus ${task.cpus} $file
     """
 }
 
 process RUN_CONSTCLUST {
     conda "envs/constclust.yml"
 
-    publishDir "$params.outdir/method_output/${name}"
+    publishDir "$params.outdir/method_output/${dataset}"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("constclust.h5ad"), val(labels)
+        tuple val(dataset), path("constclust.h5ad")
 
     script:
     """
@@ -209,13 +211,13 @@ process RUN_CONSTCLUST {
 process METHOD_MRCC_N_Comp_Prob {
     conda "envs/mrcc.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("mrcc_N-Comp-Prob.h5ad"), val(labels), val("MRCC N-Comp-Prob")
+        tuple val(dataset), path("mrcc_N-Comp-Prob.h5ad"), val("MRCC N-Comp-Prob")
 
     script:
     """
@@ -231,13 +233,13 @@ process METHOD_MRCC_N_Comp_Prob {
 process METHOD_MRCC_N_Leid_Prob {
     conda "envs/mrcc.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("mrcc_N-Leid-Prob.h5ad"), val(labels), val("MRCC N-Leid-Prob")
+        tuple val(dataset), path("mrcc_N-Leid-Prob.h5ad"), val("MRCC N-Leid-Prob")
 
     script:
     """
@@ -253,13 +255,13 @@ process METHOD_MRCC_N_Leid_Prob {
 process METHOD_MRCC_A_HDB_Prob {
     conda "envs/mrcc.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("mrcc_A-HDB-Prob.h5ad"), val(labels), val("MRCC A-HDB-Prob")
+        tuple val(dataset), path("mrcc_A-HDB-Prob.h5ad"), val("MRCC A-HDB-Prob")
 
     script:
     """
@@ -274,13 +276,13 @@ process METHOD_MRCC_A_HDB_Prob {
 process METHOD_MRCC_A_Louv_Prob {
     conda "envs/mrcc.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("mrcc_A-Louv-Prob.h5ad"), val(labels), val("MRCC A-Louv-Prob")
+        tuple val(dataset), path("mrcc_A-Louv-Prob.h5ad"), val("MRCC A-Louv-Prob")
 
     script:
     """
@@ -295,13 +297,13 @@ process METHOD_MRCC_A_Louv_Prob {
 process METHOD_MRCC_A_Louv_HDB {
     conda "envs/mrcc.yml"
 
-    publishDir "$params.outdir/method_output/${name}", mode: "copy"
+    publishDir "$params.outdir/method_output/${dataset}", mode: "copy"
 
     input:
-        tuple val(name), path(file), val(labels)
+        tuple val(dataset), path(file)
 
     output:
-        tuple val(name), path("mrcc_A-Louv-HDB.h5ad"), val(labels), val("MRCC A-Louv-HDB")
+        tuple val(dataset), path("mrcc_A-Louv-HDB.h5ad"), val("MRCC A-Louv-HDB")
 
     script:
     """
@@ -316,34 +318,30 @@ process METHOD_MRCC_A_Louv_HDB {
 process MATCH_CLUSTERS {
     conda "envs/sklearn.yml"
 
-    publishDir "$params.outdir/method_output/${name}"
+    publishDir "$params.outdir/method_output/${dataset}"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        tuple val(name), path("${method}_matched.h5ad"), val(labels), val(method)
+        tuple val(dataset), path("${method}_matched.h5ad"), val(method)
 
     script:
     """
-    match_clusters.py \\
-        --clusters "Cluster" \\
-        --labels "$labels" \\
-        --out-file "${method}_matched.h5ad" \\
-        $file
+    match_clusters.py --out-file "${method}_matched.h5ad" $file
     """
 }
 
 process H5AD2RDS_MATCHED {
     conda "envs/zellkonverter.yml"
 
-    publishDir "$params.outdir/method_output/${name}"
+    publishDir "$params.outdir/method_output/${dataset}"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        tuple val(name), path("${file.baseName}.Rds"), val(labels), val(method)
+        tuple val(dataset), path("${file.baseName}.Rds"), val(method)
 
     script:
     """
@@ -355,17 +353,16 @@ process METRIC_ARI {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("ari_${name}_${method}.tsv")
+        path("ari_${dataset}_${method}.tsv")
 
     script:
     """
     metric_ari.py \\
-        --out-file "ari_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "ari_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -375,17 +372,16 @@ process METRIC_AMI {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("ami_${name}_${method}.tsv")
+        path("ami_${dataset}_${method}.tsv")
 
     script:
     """
     metric_ami.py \\
-        --out-file "ami_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "ami_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -395,16 +391,16 @@ process METRIC_FMI {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("fmi_${name}_${method}.tsv")
+        path("fmi_${dataset}_${method}.tsv")
+
     script:
     """
     metric_fmi.py \\
-        --out-file "fmi_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "fmi_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -414,16 +410,16 @@ process METRIC_COMPLETENESS {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("completeness_${name}_${method}.tsv")
+        path("completeness_${dataset}_${method}.tsv")
+
     script:
     """
     metric_completeness.py \\
-        --out-file "completeness_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "completeness_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -433,16 +429,16 @@ process METRIC_HOMOGENEITY {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("homogeneity_${name}_${method}.tsv")
+        path("homogeneity_${dataset}_${method}.tsv")
+
     script:
     """
     metric_homogeneity.py \\
-        --out-file "homogeneity_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "homogeneity_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -452,16 +448,15 @@ process METRIC_F1 {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("F1_${name}_${method}.tsv")
+        path("F1_${dataset}_${method}.tsv")
     script:
     """
     metric_F1.py \\
-        --out-file "F1_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "F1_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -471,16 +466,15 @@ process METRIC_MCC {
     conda "envs/sklearn.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("mcc_${name}_${method}.tsv")
+        path("mcc_${dataset}_${method}.tsv")
     script:
     """
     metric_mcc.py \\
-        --out-file "mcc_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "mcc_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -490,16 +484,15 @@ process METRIC_ECS {
     conda "envs/clustassess.yml"
 
     input:
-        tuple val(name), path(file), val(labels), val(method)
+        tuple val(dataset), path(file), val(method)
 
     output:
-        path("ecs_${name}_${method}.tsv")
+        path("ecs_${dataset}_${method}.tsv")
     script:
     """
     metric_ecs.R \\
-        --out-file "ecs_${name}_${method}.tsv" \\
-        --dataset "$name" \\
-        --labels "$labels" \\
+        --out-file "ecs_${dataset}_${method}.tsv" \\
+        --dataset "$dataset" \\
         --method "$method" \\
         $file
     """
@@ -541,14 +534,14 @@ process PLOT_METRICS {
 
 workflow CCEVAL {
     PREP(datasets_ch)
-    H5AD2RDS(PREP.out)
+    PREP_RDS(PREP.out)
     METHOD_RANDOM(PREP.out)
     METHOD_SCANPY(PREP.out)
-    METHOD_SEURAT(H5AD2RDS.out)
-    METHOD_SIMLR(H5AD2RDS.out)
-    // METHOD_COLA(H5AD2RDS.out)
-    METHOD_SC3(H5AD2RDS.out)
-    RUN_CONSTCLUST(datasets_ch)
+    METHOD_SEURAT(PREP_RDS.out)
+    METHOD_SIMLR(PREP_RDS.out)
+    // METHOD_COLA(PREP_RDS.out)
+    METHOD_SC3(PREP_RDS.out)
+    RUN_CONSTCLUST(PREP.out)
     METHOD_MRCC_N_Comp_Prob(RUN_CONSTCLUST.out)
     METHOD_MRCC_N_Leid_Prob(RUN_CONSTCLUST.out)
     METHOD_MRCC_A_HDB_Prob(RUN_CONSTCLUST.out)

@@ -4,14 +4,14 @@
 Run the F1 metric
 
 Usage:
-    metric_F1.py --out-file=<path> --dataset=<str> --labels=<str> --method=<str> [options] <file>
+    metric_F1.py --out-file=<path> --dataset=<str> --method=<str> [options] <file>
 
 Options:
     -h --help            Show this screen.
     --out-file=<path>    Path to output file.
     --dataset=<str>      Name of the dataset.
-    --labels=<str>       Column of obs containing cell labels.
     --method=<str>       Name of the method.
+    --labels=<str>       Column of obs containing cell labels [default: Label].
 """
 
 import anndata as ad
@@ -21,8 +21,11 @@ from sklearn.metrics import f1_score
 def run_F1(adata, dataset, labels, method):
 
     print("Calculating F1...")
-    score = f1_score(adata.obs[labels], adata.obs["ClusterMatched"],
-                     average="micro")
+    score = f1_score(
+        adata.obs[labels],
+        adata.obs["ClusterMatched"],
+        average="micro"
+    )
 
     results = pd.DataFrame(
         {

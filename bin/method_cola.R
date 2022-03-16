@@ -4,12 +4,12 @@
 Run the cola method
 
 Usage:
-    method_cola.R --out-file=<path> --labels=<str> [options] <file>
+    method_cola.R --out-file=<path> [options] <file>
 
 Options:
     -h --help             Show this screen.
     --out-file=<path>     Path to output file.
-    --labels=<str>        Column of obs containing cell labels.
+    --labels=<str>        Column of obs containing cell labels [default: Label].
     --ncpus=<cpus>        Number of CPUs to use [default: 1].
 " -> doc
 

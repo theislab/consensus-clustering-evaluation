@@ -4,14 +4,14 @@
 Run the Fowlkes-Mallows Index (FMI) metric
 
 Usage:
-    metric_fmi.py --out-file=<path> --dataset=<str> --labels=<str> --method=<str> [options] <file>
+    metric_fmi.py --out-file=<path> --dataset=<str> --method=<str> [options] <file>
 
 Options:
     -h --help            Show this screen.
     --out-file=<path>    Path to output file.
     --dataset=<str>      Name of the dataset.
-    --labels=<str>       Column of obs containing cell labels.
     --method=<str>       Name of the method.
+    --labels=<str>       Column of obs containing cell labels [default: Label].
 """
 
 import anndata as ad
