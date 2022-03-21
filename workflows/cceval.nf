@@ -128,6 +128,7 @@ process METHOD_SIMLR {
     conda "envs/simlr.yml"
 
     label "process_low"
+    label "error_ignore"
 
     input:
         tuple val(dataset), path(file)
@@ -145,6 +146,7 @@ process METHOD_SC3 {
     conda "envs/sc3.yml"
 
     label "process_medium"
+    label "error_ignore"
 
     input:
         tuple val(dataset), path(file)
