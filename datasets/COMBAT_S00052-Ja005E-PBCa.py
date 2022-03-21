@@ -22,6 +22,9 @@ print(adata)
 print(f"Subsetting to {sample} sample...")
 adata = adata[adata.obs[sample_col] == sample, :].copy()
 
+print("Removing nan label...")
+adata = adata[adata.obs[labels_col] != "nan", :]
+
 print("Subsetting to labels with at least 20 cells...")
 label_counts = adata.obs[labels_col].value_counts()
 keep_labels = label_counts.index[label_counts.gt(19)]
@@ -40,3 +43,4 @@ print(f"Saving dataset to {out_file}...")
 adata.write_h5ad(out_file)
 
 print("Done!")
+
