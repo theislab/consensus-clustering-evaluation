@@ -29,6 +29,7 @@ def plot_umap(adata, clusters):
         legend_fontweight="light",
         add_outline=True,
         outline_width=(0.1, 0.05),
+        ncols=1,
         wspace=0.3,
         show=False,
         return_fig=True
