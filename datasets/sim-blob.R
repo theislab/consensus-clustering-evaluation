@@ -9,6 +9,8 @@ sim <- splatSimulate(
     seed       = 1
 )
 
+sim$Group <- "Group1"
+
 writeH5AD(
     sim,
     "sim-blob.h5ad",
