@@ -17,8 +17,15 @@ import pandas as pd
 
 def run_constclust(adata):
 
+    print("Scaling counts to counts per 10000...")
+    scanpy.pp.normalize_total(adata, target_sum=1e4)
+
+    print("Log transforming...")
+    scanpy.pp.log1p(adata)
+
     print("Finding highly variable genes...")
     sc.pp.highly_variable_genes(adata, flavor="cell_ranger", n_top_genes=2000)
+
     print("Performing PCA...")
     sc.tl.pca(adata)
 
