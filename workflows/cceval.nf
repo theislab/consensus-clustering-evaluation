@@ -54,11 +54,15 @@ process PREP {
         tuple val(dataset), path(file), val(labels)
 
     output:
-        tuple val(dataset), path("${dataset}.h5ad")
+        tuple val(dataset), path("${dataset}_prepped.h5ad")
 
     script:
     """
-    prep_dataset.py --name "$dataset" --labels "$labels" --out-file "${dataset}.h5ad" $file
+    prep_dataset.py \\
+        --name "$dataset" \\
+        --labels "$labels" \\
+        --out-file "${dataset}_prepped.h5ad" \\
+        $file
     """
 }
 
@@ -196,6 +200,8 @@ process RUN_CONSTCLUST {
 
 process METHOD_MRCC {
     conda "envs/mrcc.yml"
+
+    label "process_low"
 
     input:
         tuple val(dataset), path(file), val(name), val(graph_type), val(community_type),
@@ -463,17 +469,17 @@ workflow CCEVAL {
     METHOD_SCANPY(PREP.out)
     METHOD_SEURAT(PREP_RDS.out)
     METHOD_SIMLR(PREP_RDS.out)
-    METHOD_COLA(PREP_RDS.out)
+    // METHOD_COLA(PREP_RDS.out)
     METHOD_SC3(PREP_RDS.out)
     RUN_CONSTCLUST(PREP.out)
     METHOD_MRCC(RUN_CONSTCLUST.out.combine(mrcc_ch))
     output_ch = METHOD_RANDOM.out
-        .concat(METHOD_SCANPY.out)
-        .concat(METHOD_MRCC.out)
-        .concat(METHOD_SEURAT.out)
-        .concat(METHOD_SIMLR.out)
-        .concat(METHOD_SC3.out)
-        .concat(METHOD_COLA.out)
+        .mix(METHOD_SCANPY.out)
+        .mix(METHOD_MRCC.out)
+        .mix(METHOD_SEURAT.out)
+        .mix(METHOD_SIMLR.out)
+        .mix(METHOD_SC3.out)
+        // .mix(METHOD_COLA.out)
     MATCH_CLUSTERS(output_ch)
     METRIC_K(MATCH_CLUSTERS.out)
     METRIC_ARI(MATCH_CLUSTERS.out)
