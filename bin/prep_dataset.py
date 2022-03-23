@@ -25,7 +25,7 @@ def prep_dataset(name, file, labels):
     print(f"Name: {name}")
     print(f"Cells: {adata_raw.n_obs}")
     print(f"Genes: {adata_raw.n_vars}")
-    print(f"Labels: {labels}")
+    print(f"Labels: {labels} ({len(adata_raw.obs[labels].cat.categories)})")
     print(adata_raw)
     print("=======================")
     print()
@@ -47,7 +47,16 @@ def prep_dataset(name, file, labels):
     scanpy.pp.filter_genes(adata, min_counts=1)
 
     print("Removing unused labels...")
-    adata.obs["Label"] = adata.obs["Label"].remove_unused_categories()
+    adata.obs["Label"].cat = adata.obs["Label"].cat.remove_unused_categories()
+
+    print("Saving counts...")
+    counts = adata.X.copy()
+
+    print("Scaling counts to counts per 10000...")
+    scanpy.pp.normalize_total(adata, target_sum=1e4)
+
+    print("Log transforming...")
+    scanpy.pp.log1p(adata)
 
     print("Calculating 2000 highly variable genes...")
     scanpy.pp.highly_variable_genes(adata, flavor="cell_ranger", n_top_genes=2000)
@@ -61,11 +70,14 @@ def prep_dataset(name, file, labels):
     print("Calculating UMAP...")
     scanpy.tl.umap(adata)
 
+    print("Storing counts...")
+    adata.X = counts
+
     print("\n==== PREPARED DATA ====")
     print(f"Name: {name}")
     print(f"Cells: {adata.n_obs}")
     print(f"Genes: {adata.n_vars}")
-    print(f"Labels: Label")
+    print(f"Labels: Label ({len(adata.obs['Label'].cat.categories)})")
     print(adata)
     print("=======================\n")
 
