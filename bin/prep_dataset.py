@@ -46,6 +46,9 @@ def prep_dataset(name, file, labels):
     print("Removing genes with 0 counts...")
     scanpy.pp.filter_genes(adata, min_counts=1)
 
+    print("Removing unused labels...")
+    adata.obs["Label"] = adata.obs["Label"].remove_unused_categories()
+
     print("Calculating 2000 highly variable genes...")
     scanpy.pp.highly_variable_genes(adata, flavor="cell_ranger", n_top_genes=2000)
 
