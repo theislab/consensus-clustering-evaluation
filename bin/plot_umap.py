@@ -30,7 +30,6 @@ def plot_umap(adata, clusters):
         add_outline=True,
         outline_width=(0.1, 0.05),
         ncols=1,
-        wspace=0.3,
         show=False,
         return_fig=True
     )
@@ -56,5 +55,5 @@ if __name__=="__main__":
     print(clusters)
     umap = plot_umap(adata, clusters)
     print(f"Writing plot to '{out_file}'...")
-    umap.savefig(out_file, dpi=300)
+    umap.savefig(out_file, dpi=300, bbox_inches="tight")
     print("Done!")
