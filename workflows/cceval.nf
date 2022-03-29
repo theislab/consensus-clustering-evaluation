@@ -201,8 +201,6 @@ process RUN_CONSTCLUST {
 process METHOD_MRCC {
     conda "envs/mrcc.yml"
 
-    label "process_low"
-
     input:
         tuple val(dataset), path(file), val(name), val(graph_type), val(community_type),
         val(outlier_type), val(outlier_thresh), val(merge_thresh)
