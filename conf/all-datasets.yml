@@ -1,0 +1,74 @@
+input:
+    - name: GCA_F73-FPIL-0-SC-1
+      file: GCA_F73-FPIL-0-SC-1.h5ad
+      labels: Integrated_05
+    - name: Neurips_site2-donor1-cite
+      file: Neurips_site2-donor1-cite.h5ad
+      labels: cell_type
+    - name: Simulation_Blob
+      file: sim-blob.h5ad
+      labels: Group
+    - name: Simulation_Path
+      file: sim-path.h5ad
+      labels: Group
+    - name: Simulation_Groups
+      file: sim-groups.h5ad
+      labels: Group
+    - name: Simulation_Rare
+      file: sim-rare.h5ad
+      labels: Group
+mrcc:
+    - name: MRCC_N_Co_Pr_O09_M08
+      graph_type: neighbour
+      community_type: component
+      outlier_type: probability
+      outlier_thresh: 0.9
+      merge_thresh: 0.8
+    - name: MRCC_N_Le_Pr_O09_M08
+      graph_type: neighbour
+      community_type: leiden
+      outlier_type: probability
+      outlier_thresh: 0.9
+      merge_thresh: 0.8
+    - name: MRCC_A_HD_Pr_O09_M08
+      graph_type: all
+      community_type: hdbscan
+      outlier_type: probability
+      outlier_thresh: 0.9
+      merge_thresh: 0.8
+    - name: MRCC_A_Lo_Pr_O09_M08
+      graph_type: all
+      community_type: louvain
+      outlier_type: probability
+      outlier_thresh: 0.9
+      merge_thresh: 0.8
+    - name: MRCC_A_Lo_HD_O09_M08
+      graph_type: all
+      community_type: louvain
+      outlier_type: hdbscan
+      outlier_thresh: 0.9
+      merge_thresh: 0.8
+    - name: MRCC_N_Co_Pr_O05_M08
+      graph_type: neighbour
+      community_type: component
+      outlier_type: probability
+      outlier_thresh: 0.5
+      merge_thresh: 0.8
+    - name: MRCC_N_Co_Pr_O075_M08
+      graph_type: neighbour
+      community_type: component
+      outlier_type: probability
+      outlier_thresh: 0.75
+      merge_thresh: 0.8
+    - name: MRCC_N_Co_Pr_O09_M07
+      graph_type: neighbour
+      community_type: component
+      outlier_type: probability
+      outlier_thresh: 0.9
+      merge_thresh: 0.7
+    - name: MRCC_N_Co_Pr_O09_M09
+      graph_type: neighbour
+      community_type: component
+      outlier_type: probability
+      outlier_thresh: 0.9
+      merge_thresh: 0.9
