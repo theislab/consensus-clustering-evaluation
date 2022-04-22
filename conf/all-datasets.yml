@@ -18,57 +18,34 @@ input:
       file: sim-rare.h5ad
       labels: Group
 mrcc:
-    - name: MRCC_N_Co_Pr_O09_M08
+    - name: MRCC_N_Co_Pr_O095_M09
       graph_type: neighbour
       community_type: component
       outlier_type: probability
-      outlier_thresh: 0.9
-      merge_thresh: 0.8
-    - name: MRCC_N_Le_Pr_O09_M08
+      outlier_thresh: 0.95
+      merge_thresh: 0.9
+    - name: MRCC_A_Co_Pr_O095_M09
+      graph_type: all
+      community_type: component
+      outlier_type: probability
+      outlier_thresh: 0.95
+      merge_thresh: 0.9
+    - name: MRCC_N_Le_Pr_O095_M09
       graph_type: neighbour
       community_type: leiden
       outlier_type: probability
-      outlier_thresh: 0.9
-      merge_thresh: 0.8
-    - name: MRCC_A_HD_Pr_O09_M08
+      outlier_thresh: 0.95
+      merge_thresh: 0.9
+    - name: MRCC_A_Le_Pr_O095_M09
+      graph_type: all
+      community_type: leiden
+      outlier_type: probability
+      outlier_thresh: 0.95
+      merge_thresh: 0.9
+    - name: MRCC_A_HD_Pr_O095_M09
       graph_type: all
       community_type: hdbscan
       outlier_type: probability
-      outlier_thresh: 0.9
-      merge_thresh: 0.8
-    - name: MRCC_A_Lo_Pr_O09_M08
-      graph_type: all
-      community_type: louvain
-      outlier_type: probability
-      outlier_thresh: 0.9
-      merge_thresh: 0.8
-    - name: MRCC_A_Lo_HD_O09_M08
-      graph_type: all
-      community_type: louvain
-      outlier_type: hdbscan
-      outlier_thresh: 0.9
-      merge_thresh: 0.8
-    - name: MRCC_N_Co_Pr_O05_M08
-      graph_type: neighbour
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.5
-      merge_thresh: 0.8
-    - name: MRCC_N_Co_Pr_O075_M08
-      graph_type: neighbour
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.75
-      merge_thresh: 0.8
-    - name: MRCC_N_Co_Pr_O09_M07
-      graph_type: neighbour
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.9
-      merge_thresh: 0.7
-    - name: MRCC_N_Co_Pr_O09_M09
-      graph_type: neighbour
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.9
+      outlier_thresh: 0.95
       merge_thresh: 0.9
+
