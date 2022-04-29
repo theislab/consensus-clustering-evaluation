@@ -5,6 +5,21 @@ input:
     - name: Neurips_site2-donor1-cite
       file: Neurips_site2-donor1-cite.h5ad
       labels: cell_type
+    - name: COMBAT_S00052-Ja005E-PBCa
+      file: COMBAT_S00052-Ja005E-PBCa.h5ad
+      labels: Annotation_cluster_name
+    - name: azimuth-kidney_CZIKidney7632803
+      file: azimuth-kidney_CZIKidney7632803.h5ad
+      labels: celltype
+    - name: azimuth-lung_Dropseq-2
+      file: azimuth-lung_Dropseq-2.h5ad
+      labels: celltype
+    - name: azimuth-marrow_batch2
+      file: azimuth-marrow_batch2.h5ad
+      labels: celltype.l2
+    - name: azimuth-mouse-cortex_352357
+      file: azimuth-mouse-cortex_352357.h5ad
+      labels: subclass
     - name: Simulation_Blob
       file: sim-blob.h5ad
       labels: Group
