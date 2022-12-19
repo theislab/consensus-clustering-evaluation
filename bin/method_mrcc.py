@@ -7,13 +7,12 @@ Usage:
     method_mrcc.py --out-file=<path> [options] <file>
 
 Options:
-    -h --help                  Show this screen.
-    --out-file=<path>          Path to output file.
-    --graph-type=<str>         Graph type for selecting clusters (neighbour, all) [default: neighbour].
-    --community-type=<str>     Multi-resolution community detection method to use (component, leiden, hdbscan, louvain) [default: leiden].
-    --outlier-type=<str>       Outlier detection method to use (probability, hdbscan) [default: probability].
-    --outlier-thresh=<float>   Outlier detection threshold [default: 0.9].
-    --merge-thresh=<float>     Edge merging threshold [default: 0.8].
+    -h --help                       Show this screen.
+    --out-file=<path>               Path to output file.
+    --graph-type=<str>              Graph type for selecting clusters (neighbour, all) [default: neighbour].
+    --community-type=<str>          Multi-resolution community detection method to use (leiden, hdbscan, louvain) [default: leiden].
+    --single-resolution=<float>     Parameter for the single-resolution graph community detection method (leiden resolution parameter) [default: 1].
+    --multi-resolution=<float>      Parameter for the mult-resolution graph community detection method (leiden resolution parameter) [default: 1].
 """
 
 import scanpy as sc
@@ -33,8 +32,8 @@ sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 import multires_consensus_clustering as mrcc
 
-def run_mrcc(adata, neighbour_based, community_type, outlier_type,
-             outlier_thresh, merge_thresh):
+def run_mrcc(adata, neighbour_based, community_type, single_resolution,
+             multi_resolution):
 
     settings = adata.uns["constclust"]["settings"]
     clusterings = adata.uns["constclust"]["clusterings"]
@@ -43,26 +42,24 @@ def run_mrcc(adata, neighbour_based, community_type, outlier_type,
     print("Performing multi-resolution consensus clustering...")
     print(f"Neighbour-based: {neighbour_based}")
     print(f"Community type: {community_type}")
-    print(f"Outlier type: {outlier_type}")
-    print(f"Outlier threshold: {outlier_thresh}")
-    print(f"Merge threshold: {merge_thresh}")
+    print(f"Single-resolution parameter: {single_resolution}")
+    print(f"Multi-resolution parameter: {multi_resolution}")
 
     print("Calculating multi-resolution graph...")
     multires_graph = mrcc.multiresolution_graph(
         clusterings,
         settings,
         "all",
-        neighbour_based=neighbour_based
+        neighbour_based=neighbour_based,
+        single_resolution=single_resolution
     )
 
     print("Clustering multi-resolution graph...")
     multires_graph = mrcc.multires_community_detection(
         multires_graph,
         community_detection=community_type,
-        merge_edges_threshold=merge_thresh,
-        outlier_detection=outlier_type,
-        outlier_detection_threshold=outlier_thresh,
-        clustering_data=clusterings
+        clustering_data=clusterings,
+        multi_resolution=multi_resolution
     )
 
     print("Assigning cluster labels...")
@@ -92,9 +89,8 @@ if __name__=="__main__":
     out_file = args["--out-file"]
     graph_type = args["--graph-type"]
     community_type = args["--community-type"]
-    outlier_type = args["--outlier-type"]
-    outlier_thresh = float(args["--outlier-thresh"])
-    merge_thresh = float(args["--merge-thresh"])
+    single_resolution = float(args["--single-resolution"])
+    multi_resolution = float(args["--multi-resolution"])
 
     print(f"Reading data from '{file}'...")
     adata = sc.read_h5ad(file)
@@ -110,9 +106,8 @@ if __name__=="__main__":
         adata,
         neighbour_based,
         community_type,
-        outlier_type,
-        outlier_thresh,
-        merge_thresh
+        single_resolution,
+        multi_resolution
     )
     print(f"Writing clusters to '{out_file}'...")
     clusters.to_csv(out_file, sep="\t", index=False)
