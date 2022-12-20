@@ -39,9 +39,8 @@ mrcc_ch = Channel
             mrcc.name,
             mrcc.graph_type,
             mrcc.community_type,
-            mrcc.outlier_type,
-            mrcc.outlier_thresh,
-            mrcc.merge_thresh
+            mrcc.single_resolution,
+            mrcc.multi_resolution
         )
     }
 
@@ -203,7 +202,7 @@ process METHOD_MRCC {
 
     input:
         tuple val(dataset), path(file), val(name), val(graph_type), val(community_type),
-        val(outlier_type), val(outlier_thresh), val(merge_thresh)
+        val(single_resolution), val(multi_resolution)
 
     output:
         tuple val(dataset), path("${name}.tsv"), val(name)
@@ -214,9 +213,8 @@ process METHOD_MRCC {
         --out-file ${name}.tsv \\
         --graph-type ${graph_type} \\
         --community-type ${community_type} \\
-        --outlier-type ${outlier_type} \\
-        --outlier-thresh ${outlier_thresh} \\
-        --merge-thresh ${merge_thresh} \\
+        --single-resolution ${single_resolution} \\
+        --multi-resolution ${multi_resolution} \\
         $file
     """
 }
