@@ -33,34 +33,43 @@ input:
       file: sim-rare.h5ad
       labels: Group
 mrcc:
-    - name: MRCC_N_Co_Pr_O095_M09
-      graph_type: neighbour
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.95
-      merge_thresh: 0.9
-    - name: MRCC_A_Co_Pr_O095_M09
-      graph_type: all
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.95
-      merge_thresh: 0.9
-    - name: MRCC_N_Le_Pr_O095_M09
+    - name: MRCC_N_Le_SR_1_MR_1
       graph_type: neighbour
       community_type: leiden
-      outlier_type: probability
-      outlier_thresh: 0.95
-      merge_thresh: 0.9
-    - name: MRCC_A_Le_Pr_O095_M09
+      single_resolution: 1
+      multi_resolution: 1
+    - name: MRCC_A_Le_SR_1_MR_1
       graph_type: all
       community_type: leiden
-      outlier_type: probability
-      outlier_thresh: 0.95
-      merge_thresh: 0.9
-    - name: MRCC_A_HD_Pr_O095_M09
+      single_resolution: 1
+      multi_resolution: 1
+    - name: MRCC_N_Le_SR_01_MR_01
+      graph_type: neighbour
+      community_type: leiden
+      single_resolution: 0.1
+      multi_resolution: 0.1
+    - name: MRCC_A_Le_SR_01_MR_01
+      graph_type: all
+      community_type: leiden
+      single_resolution: 0.1
+      multi_resolution: 0.1
+    - name: MRCC_N_Le_SR_2_MR_2
+      graph_type: neighbour
+      community_type: leiden
+      single_resolution: 2
+      multi_resolution: 2
+    - name: MRCC_A_Le_SR_2_MR_2
+      graph_type: all
+      community_type: leiden
+      single_resolution: 2
+      multi_resolution: 2
+    - name: MRCC_A_Lo_SR_1_MR_1
+      graph_type: all
+      community_type: louvain
+      single_resolution: 1
+      multi_resolution: 1
+    - name: MRCC_A_HD_SR_1_MR_1
       graph_type: all
       community_type: hdbscan
-      outlier_type: probability
-      outlier_thresh: 0.95
-      merge_thresh: 0.9
-
+      single_resolution: 1
+      multi_resolution: 1

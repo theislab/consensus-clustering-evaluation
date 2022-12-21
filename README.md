@@ -71,8 +71,7 @@ Metrics are divided into two categories: unsupervised metrics which compare clus
 - [Completeness score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html)
 - [Element-Centric Clustering Similarity](https://doi.org/10.1038/s41598-019-44892-y) (Implemented in the [ClustAssess package](https://github.com/Core-Bioinformatics/ClustAssess))
 - [Fowlkes-Mallows Index](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html)
-- [Homogeneity score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
-)
+- [Homogeneity score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html)
 
 #### Supervised metrics
 
@@ -105,7 +104,7 @@ To run the pipeline on a high-performance computing system with a submission que
 An example for the HMGU slurm cluster is provided but you should refer to the [NextFlow docs](https://www.nextflow.io/docs) for how to design a profile for your system.
 
 ```sh
-nextflow run main.nf -profile conf/hmgu-slurm.conf
+nextflow run main.nf -profile hmgu-slurm
 ```
 ### Parameters
 
@@ -132,18 +131,16 @@ See the `bin/method-mrcc.py` script for more description of the parameters.
 
 ```yaml
 mrcc:
-    - name: MRCC_N_Co_Pr_O095_M09  # Name of the parameter set
+    - name: MRCC_N_Le_SR_1_MR_1    # Name of the parameter set
       graph_type: neighbour        # Method for building the multi-resolution graph
-      community_type: component    # Community detection method
-      outlier_type: probability    # Outlier detection method
-      outlier_thresh: 0.95         # Threshold for outlier detection
-      merge_thresh: 0.9            # Threshold for merging the multi-resolution graph
-    - name: MRCC_A_Co_Pr_O095_M09
+      community_type: leiden       # Community detection method
+      single_resolution: 1         # Community detection resolution for single-resolution graphs
+      multi_resolution: 1          # Community detection resolution for the multi-resolution graph
+    - name: MRCC_A_Le_SR_1_MR_1
       graph_type: all
-      community_type: component
-      outlier_type: probability
-      outlier_thresh: 0.95
-      merge_thresh: 0.9
+      community_type: leiden
+      single_resolution: 1
+      multi_resolution: 1
 ```
 
 ## Output
